@@ -44,7 +44,7 @@ keyboard.on_press_key("\\", lambda _:os.kill(ffmpeg.pid, signal.SIGINT))
 ffmpeg.wait()
 
 commandcurl = ( "curl "
-                f"--upload-file \"{ttime}.webm\" "
+                f"--upload-file \"{path}/{ttime}.webm\" "
                 "https://transfer.sh"
               )
 
