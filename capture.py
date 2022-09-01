@@ -24,6 +24,9 @@ offset = coords[1].split("+")
 ttime = strftime("%Y-%m-%d %H.%M.%S", localtime())
 print(ttime)
 
+path = os.path.abspath(os.path.dirname(__file__))
+print(path)
+
 command = ( "ffmpeg "
             f"-video_size {coords[0]} " 
             "-framerate 60 "
@@ -31,7 +34,7 @@ command = ( "ffmpeg "
             "-show_region 1 "
             f"-i :0.0+{offset[0]},{offset[1]} "
             "-c:v libvpx -b:v 2M "
-            f"-y \"{ttime}.webm\""
+            f"-y \"{path}/{ttime}.webm\""
           )
 
 ffmpeg = subprocess.Popen(command, shell=True)
