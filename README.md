@@ -3,7 +3,7 @@ Small Python script utilizing slop, ffmpeg, and transfer.sh to replicate "ShareX
 
 
 ### Dependencies:
-`slop`, `ffmpeg`
+`slop`, `ffmpeg`, `curl`, `xclip`
 
 `pip install keyboard`
 
