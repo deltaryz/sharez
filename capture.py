@@ -40,13 +40,14 @@ locationY = int(offset[1]) + int(size[1])
 screen_width, screen_height = sg.Window.get_screen_size()
 
 if locationY > screen_height - 50:
-    locationY = int(offset[1]) - 70
+    locationY = int(offset[1]) - 30
 
 event = sg.Window('Capture',
         [[sg.B('Stop')]],
         size=(50,30),
         margins=(0,0),
         keep_on_top=True,
+        no_titlebar=True,
         location=(locationX,locationY)
         )
 
