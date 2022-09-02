@@ -1,31 +1,26 @@
 # Dependencies:
-# slop, ffmpeg
-# pip install keyboard 
-
-# This script must be run as root, or else the keyboard shortcut to stop recording will not function.
+# slop, ffmpeg, curl, xclip, tk
+# pip install pysimplegui
 
 # This is an ugly, messy hackjob and i have not been sober for any part of its creation
 # but it works.
 
 import subprocess
-import keyboard
+import PySimpleGUI as sg
 import signal
 import os
 import time
 from time import localtime, strftime
 
 region = subprocess.check_output("slop", text=True, shell=True)
-print(region)
 coords = region.strip().split("+",1)
-print(coords)
 
+size = coords[0].split("x")
 offset = coords[1].split("+")
 
 ttime = strftime("%Y-%m-%d %H.%M.%S", localtime())
-print(ttime)
 
 path = os.path.abspath(os.path.dirname(__file__))
-print(path)
 
 command = ( "ffmpeg "
             f"-video_size {coords[0]} " 
@@ -39,7 +34,24 @@ command = ( "ffmpeg "
 
 ffmpeg = subprocess.Popen(command, shell=True)
 
-keyboard.on_press_key("\\", lambda _:os.kill(ffmpeg.pid, signal.SIGINT))
+locationX = int(offset[0])
+locationY = int(offset[1]) + int(size[1])
+
+screen_width, screen_height = sg.Window.get_screen_size()
+
+if locationY > screen_height - 50:
+    locationY = int(offset[1]) - 70
+
+event = sg.Window('Capture',
+        [[sg.B('Stop')]],
+        size=(50,30),
+        margins=(0,0),
+        location=(locationX,locationY)
+        )
+
+event.read(close=True)
+
+os.kill(ffmpeg.pid, signal.SIGINT)
 
 ffmpeg.wait()
 

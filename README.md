@@ -3,16 +3,16 @@ Small Python script utilizing slop, ffmpeg, and transfer.sh to replicate "ShareX
 
 
 ### Dependencies:
-`slop`, `ffmpeg`, `curl`, `xclip`
+`slop`, `ffmpeg`, `curl`, `xclip`, `tk`
 
-`pip install keyboard`
-
-This script must be run as root, or else the keyboard shortcut to stop recording will not function.
+`pip install pysimplegui`
 
 ### Usage:
-Either manually trigger the script with `sudo python capture.py`, or create a keyboard shortcut that runs that command.
+Either manually trigger the script with `python capture.py`, or create a keyboard shortcut that runs that command.
 
-The video will stop recording and begin uploading when you press the backslash (`\`) key, and the URL will be copied to the clipboard as soon as it finishes.
+You may then click and drag to select the region to record, at which point the recording will immediately begin.
+
+There will be a stop button below or above the recording region, which will then immediately upload the video to transfer.sh and copy a shareable URL to the clipboard.
 
 ### Disclaimer:
 
