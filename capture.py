@@ -46,6 +46,7 @@ event = sg.Window('Capture',
         [[sg.B('Stop')]],
         size=(50,30),
         margins=(0,0),
+        keep_on_top=True,
         location=(locationX,locationY)
         )
 
