@@ -8,7 +8,7 @@ Small Python script utilizing slop, ffmpeg, and transfer.sh to replicate "ShareX
 `pip install pysimplegui`
 
 ### Usage:
-Either manually trigger the script with `python capture.py`, or create a keyboard shortcut that runs that command.
+Either manually trigger the script with `python capture.py`, or create a keyboard shortcut that runs that command. Append `--rm` to remove the local copy of the video after uploading.
 
 You may then click and drag to select the region to record, at which point the recording will immediately begin.
 

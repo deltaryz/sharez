@@ -8,6 +8,7 @@
 import subprocess
 import PySimpleGUI as sg
 import signal
+import sys
 import os
 import time
 from time import localtime, strftime
@@ -80,3 +81,7 @@ link = subprocess.check_output(commandcurl, text=True, shell=True)
 # Copy the link to clipboard and print
 print(link)
 os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
+
+# Remove video file if command flag --rm is passed
+if sys.argv[1] == "--rm":
+    os.system(f"rm \"{path}/{ttime}.webm\"")
