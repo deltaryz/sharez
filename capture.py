@@ -51,17 +51,14 @@ if locationY > screen_height - 50:
     locationY = int(offset[1]) - 30
 
 # Stop button window properties
-event = sg.Window('Capture',
-        [[sg.B('Stop')]],
-        size=(50,30),
+event, values = sg.Window('Capture',
+        [[sg.OK(), sg.Cancel()]],
+        size=(120,30),
         margins=(0,0),
         keep_on_top=True,
         no_titlebar=True,
         location=(locationX,locationY)
-        )
-
-# Close window when the stop button is pressed
-event.read(close=True)
+        ).read(close=True)
 
 # Tell ffmpeg to stop
 os.kill(ffmpeg.pid, signal.SIGINT)
@@ -69,19 +66,30 @@ os.kill(ffmpeg.pid, signal.SIGINT)
 # Wait for ffmpeg to finish up
 ffmpeg.wait()
 
-# Curl command flags
-commandcurl = ( "curl "
-                f"--upload-file \"{path}/{ttime}.webm\" "
-                "https://transfer.sh"
-              )
+# Only do this if the user pressed OK
+if event == 'OK':
+    print("OK")
 
-# Run curl, uploading video to transfer.sh
-link = subprocess.check_output(commandcurl, text=True, shell=True)
+    # Curl command flags
+    commandcurl = ( "curl "
+                    f"--upload-file \"{path}/{ttime}.webm\" "
+                    "https://transfer.sh"
+                  )
 
-# Copy the link to clipboard and print
-print(link)
-os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
+    # Run curl, uploading video to transfer.sh
+    link = subprocess.check_output(commandcurl, text=True, shell=True)
 
-# Remove video file if command flag --rm is passed
-if sys.argv[1] == "--rm":
+    # Copy the link to clipboard and print
+    print(link)
+    os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
+
+# Check for arguments
+rmSetting = False
+if len(sys.argv) > 1:
+    if sys.argv[1] == "--rm":
+        rmSetting = True
+
+# Remove video file if command flag --rm is passed or the user pressed Cancel
+if rmSetting == True or event == 'Cancel':
+    print("Removing video...")
     os.system(f"rm \"{path}/{ttime}.webm\"")
