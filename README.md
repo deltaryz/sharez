@@ -14,6 +14,8 @@ Click and drag to select the region to record, and the recording will immediatel
 
 There will be an OK button below or above the recording region, when pressed it will immediately stop recording and upload the video to transfer.sh, and then copy a shareable URL to the clipboard.
 
+By default, the recording will be saved in the same directory as `capture.py`.
+
 Commandline Flags:
 * `--rm` - remove the video file after script runs
 * `--no-upload` - do not upload to transfer.sh
