@@ -12,15 +12,20 @@ import os
 import time
 from time import localtime, strftime
 
+# Get the current directory the script is running from
+path = os.path.abspath(os.path.dirname(__file__))
+
 # Check for arguments
 rmSetting = False
 uploadSetting = True
 
 for arg in sys.argv:
-    if arg == "--rm":
+    if arg == "--rm": # Remove video after script runs
         rmSetting = True
-    if arg == "--no-upload":
+    if arg == "--no-upload": # Don't upload to transfer.sh
         uploadSetting = False
+    if "--path=" in arg: # Change path to save video
+        _, path = arg.split("=")
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
@@ -32,9 +37,6 @@ offset = coords[1].split("+")
 
 # Get current time for video filename
 ttime = strftime("%Y-%m-%d %H.%M.%S", localtime())
-
-# Get the current directory the script is running from
-path = os.path.abspath(os.path.dirname(__file__))
 
 # Command flags for ffmpeg
 command = ( "ffmpeg "

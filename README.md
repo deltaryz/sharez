@@ -17,4 +17,4 @@ There will be an OK button below or above the recording region, when pressed it 
 Commandline Flags:
 * `--rm` - remove the video file after script runs
 * `--no-upload` - do not upload to transfer.sh
-
+* `--path=/home/example` - path to save video
