@@ -2,8 +2,7 @@
 # slop, ffmpeg, curl, xclip, tk
 # pip install pysimplegui
 
-# This is an ugly, messy hackjob and i have not been sober for any part of its creation
-# but it works.
+# I have not been sober for any part of the creation of this script
 
 import subprocess
 import PySimpleGUI as sg
@@ -12,6 +11,16 @@ import sys
 import os
 import time
 from time import localtime, strftime
+
+# Check for arguments
+rmSetting = False
+uploadSetting = True
+
+for arg in sys.argv:
+    if arg == "--rm":
+        rmSetting = True
+    if arg == "--no-upload":
+        uploadSetting = False
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
@@ -67,7 +76,7 @@ os.kill(ffmpeg.pid, signal.SIGINT)
 ffmpeg.wait()
 
 # Only do this if the user pressed OK
-if event == 'OK':
+if event == 'OK' and uploadSetting == True:
     print("OK")
 
     # Curl command flags
@@ -83,11 +92,6 @@ if event == 'OK':
     print(link)
     os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
 
-# Check for arguments
-rmSetting = False
-if len(sys.argv) > 1:
-    if sys.argv[1] == "--rm":
-        rmSetting = True
 
 # Remove video file if command flag --rm is passed or the user pressed Cancel
 if rmSetting == True or event == 'Cancel':
