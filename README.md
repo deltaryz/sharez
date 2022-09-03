@@ -20,3 +20,5 @@ Commandline Flags:
 * `--rm` - remove the video file after script runs
 * `--no-upload` - do not upload to transfer.sh
 * `--path=/home/example` - path to save video
+
+![Demonstration of script usage](demo.gif)
