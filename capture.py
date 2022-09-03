@@ -94,6 +94,7 @@ if event == 'OK' and uploadSetting == True:
     print(link)
     os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
 
+print(f"{path}/{ttime}.webm")
 
 # Remove video file if command flag --rm is passed or the user pressed Cancel
 if rmSetting == True or event == 'Cancel':
