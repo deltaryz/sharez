@@ -4,6 +4,8 @@
 
 # I have not been sober for any part of the creation of this script
 
+# TODO: option for libvpx/webm or x264/mp4
+
 import subprocess
 import PySimpleGUI as sg
 import signal
@@ -11,6 +13,9 @@ import sys
 import os
 import time
 from time import localtime, strftime
+
+# Get current time for video filename
+filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + ".webm"
 
 # Get the current directory the script is running from
 path = os.path.abspath(os.path.dirname(__file__))
@@ -25,7 +30,11 @@ for arg in sys.argv:
     if arg == "--no-upload": # Don't upload to transfer.sh
         uploadSetting = False
     if "--path=" in arg: # Change path to save video
-        _, path = arg.split("=")
+        _, path = arg.split("=",1)
+    if "--filename=" in arg: # change filename of video
+        _, filename = arg.split("=",1)
+        if ".webm" not in arg: # make sure we have the extension
+            filename += ".webm"
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
@@ -35,9 +44,6 @@ coords = region.strip().split("+",1)
 size = coords[0].split("x")
 offset = coords[1].split("+")
 
-# Get current time for video filename
-ttime = strftime("%Y-%m-%d %H.%M.%S", localtime())
-
 # Command flags for ffmpeg
 command = ( "ffmpeg "
             f"-video_size {coords[0]} " 
@@ -46,7 +52,7 @@ command = ( "ffmpeg "
             "-show_region 1 "
             f"-i :0.0+{offset[0]},{offset[1]} "
             "-c:v libvpx -b:v 2M "
-            f"-y \"{path}/{ttime}.webm\"" # Video is saved next to the script
+            f"-y \"{path}/{filename}\"" 
           )
 
 # Actually start ffmpeg
@@ -83,7 +89,7 @@ if event == 'OK' and uploadSetting == True:
 
     # Curl command flags
     commandcurl = ( "curl "
-                    f"--upload-file \"{path}/{ttime}.webm\" "
+                    f"--upload-file \"{path}/{filename}\" "
                     "https://transfer.sh"
                   )
 
@@ -94,9 +100,9 @@ if event == 'OK' and uploadSetting == True:
     print(link)
     os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
 
-print(f"{path}/{ttime}.webm")
+print(f"{path}/{filename}")
 
 # Remove video file if command flag --rm is passed or the user pressed Cancel
 if rmSetting == True or event == 'Cancel':
     print("Removing video...")
-    os.system(f"rm \"{path}/{ttime}.webm\"")
+    os.system(f"rm \"{path}/{filename}\"")
