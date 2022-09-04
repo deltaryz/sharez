@@ -18,6 +18,7 @@ By default, the recording will be saved in the same directory as `capture.py`.
 
 Commandline Flags:
 * `--rm` - remove the video file after script runs
+* `--no-copy` - do not copy link to clipboard
 * `--no-upload` - do not upload to transfer.sh
 * `--path=/home/example` - path to save video
 * `--filename=example.webm` - filename (extension optional)

@@ -23,12 +23,15 @@ path = os.path.abspath(os.path.dirname(__file__))
 # Check for arguments
 rmSetting = False
 uploadSetting = True
+copySetting = True
 
 for arg in sys.argv:
     if arg == "--rm": # Remove video after script runs
         rmSetting = True
     if arg == "--no-upload": # Don't upload to transfer.sh
         uploadSetting = False
+    if arg == "--no-copy": # Don't copy to clipboard
+        copySetting = False
     if "--path=" in arg: # Change path to save video
         _, path = arg.split("=",1)
     if "--filename=" in arg: # change filename of video
@@ -101,12 +104,14 @@ if event == 'OK' and uploadSetting == True:
     link = subprocess.check_output(commandcurl, text=True, shell=True)
 
     # Important stuff is done
-    print("\n\nDone uploading!\n")
+    print("\n\nDone uploading!")
 
     # Copy the link to clipboard
-    os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
+    if copySetting == True:
+        os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
+        print("Copied to clipboard!")
 
-    print(f"Link: {link}")
+    print(f"\nLink: {link}")
 
 print(f"Path: {path}/{filename}\n")
 
