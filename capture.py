@@ -39,6 +39,8 @@ for arg in sys.argv:
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
 
+print(f"Region: {region}")
+
 # Split strings to get separate numbers
 coords = region.strip().split("+",1)
 size = coords[0].split("x")
@@ -55,15 +57,17 @@ command = ( "ffmpeg "
             f"-y \"{path}/{filename}\"" 
           )
 
-# Actually start ffmpeg
+print(f"Running command: {command}\n")
+
+# Start ffmpeg
 ffmpeg = subprocess.Popen(command, shell=True)
 
 # Make sure the stop button is placed near the recording region
-screen_width, screen_height = sg.Window.get_screen_size()
 locationX = int(offset[0])
 locationY = int(offset[1]) + int(size[1])
 
 # Move stop button above region if it's near the bottom
+screen_width, screen_height = sg.Window.get_screen_size()
 if locationY > screen_height - 50:
     locationY = int(offset[1]) - 30
 
@@ -85,7 +89,7 @@ ffmpeg.wait()
 
 # Only do this if the user pressed OK
 if event == 'OK' and uploadSetting == True:
-    print("OK")
+    print("\n\nOK, now uploading...\n\n")
 
     # Curl command flags
     commandcurl = ( "curl "
@@ -96,11 +100,15 @@ if event == 'OK' and uploadSetting == True:
     # Run curl, uploading video to transfer.sh
     link = subprocess.check_output(commandcurl, text=True, shell=True)
 
-    # Copy the link to clipboard and print
-    print(link)
+    # Important stuff is done
+    print("\n\nDone uploading!\n")
+
+    # Copy the link to clipboard
     os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
 
-print(f"{path}/{filename}")
+    print(f"Link: {link}")
+
+print(f"Path: {path}/{filename}\n")
 
 # Remove video file if command flag --rm is passed or the user pressed Cancel
 if rmSetting == True or event == 'Cancel':
