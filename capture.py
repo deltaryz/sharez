@@ -24,8 +24,12 @@ path = os.path.abspath(os.path.dirname(__file__))
 rmSetting = False
 uploadSetting = True
 copySetting = True
+openVLC = False
+
 
 for arg in sys.argv:
+    if arg == "--vlc": # Preview video in VLC before uploading
+        openVLC = True
     if arg == "--rm": # Remove video after script runs
         rmSetting = True
     if arg == "--no-upload": # Don't upload to transfer.sh
@@ -92,7 +96,9 @@ ffmpeg.wait()
 
 # Only do this if the user pressed OK
 if event == 'OK' and uploadSetting == True:
-    os.system(f"vlc {path}/{filename}")
+    # Preview video in VLC before uploading
+    if openVLC == True:
+       os.system(f"vlc {path}/{filename}")
     print("\n\nOK, now uploading...\n\n")
 
     # Curl command flags
