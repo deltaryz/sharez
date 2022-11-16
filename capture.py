@@ -92,6 +92,7 @@ ffmpeg.wait()
 
 # Only do this if the user pressed OK
 if event == 'OK' and uploadSetting == True:
+    os.system(f"vlc {path}/{filename}")
     print("\n\nOK, now uploading...\n\n")
 
     # Curl command flags
