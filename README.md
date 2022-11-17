@@ -22,5 +22,6 @@ Commandline Flags:
 * `--no-upload` - do not upload to transfer.sh
 * `--path=/home/example` - path to save video
 * `--filename=example.webm` - filename (extension optional)
+* `--vlc` - before uploading, open the video in VLC to preview (requires VLC to be installed)
 
 ![Demonstration of script usage](demo.gif)
