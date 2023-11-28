@@ -5,7 +5,7 @@ Small Python script utilizing slop, ffmpeg, and transfer.sh to replicate "ShareX
 ### Dependencies:
 `slop`, `ffmpeg`, `curl`, `xclip`, `tk`
 
-`pip install pysimplegui`
+`pip install pysimplegui playsound`
 
 ### Usage:
 Either manually trigger the script with `python capture.py`, or create a keyboard shortcut that runs that command. 
