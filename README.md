@@ -20,6 +20,7 @@ Commandline Flags:
 * `--rm` - remove the video file after script runs
 * `--no-copy` - do not copy link to clipboard
 * `--no-upload` - do not upload to transfer.sh
+* `--no-sound` - do not play sound effects
 * `--path=/home/example` - path to save video
 * `--filename=example.webm` - filename (extension optional)
 * `--vlc` - before uploading, open the video in VLC to preview (requires VLC to be installed)

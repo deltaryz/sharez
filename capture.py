@@ -12,20 +12,31 @@ import signal
 import sys
 import os
 import time
+from playsound import playsound
 from time import localtime, strftime
-
-# Get current time for video filename
-filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + ".webm"
 
 # Get the current directory the script is running from
 path = os.path.abspath(os.path.dirname(__file__))
 
+# Sound effects
+recordStart = path + "/BEGIN.wav"
+recordFinish = path + "/END.wav"
+encodingFinished = path + "/ENCODE.wav"
+uploadFinished = path + "/UPLOAD.wav"
+
+def sfx(sound):
+    if soundSetting:
+        playsound(sound)
+
+# Get current time for video filename
+filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + ".webm"
+
 # Check for arguments
 rmSetting = False
 uploadSetting = True
+soundSetting = True
 copySetting = True
 openVLC = False
-
 
 for arg in sys.argv:
     if arg == "--vlc": # Preview video in VLC before uploading
@@ -36,6 +47,8 @@ for arg in sys.argv:
         uploadSetting = False
     if arg == "--no-copy": # Don't copy to clipboard
         copySetting = False
+    if arg == "--no-sound": # Don't play sounds
+        soundSetting = False
     if "--path=" in arg: # Change path to save video
         _, path = arg.split("=",1)
     if "--filename=" in arg: # change filename of video
@@ -45,6 +58,8 @@ for arg in sys.argv:
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
+
+sfx(recordStart)
 
 print(f"Region: {region}")
 
@@ -94,8 +109,11 @@ os.kill(ffmpeg.pid, signal.SIGINT)
 # Wait for ffmpeg to finish up
 ffmpeg.wait()
 
+sfx(recordFinish)
+
 # Only do this if the user pressed OK
 if event == 'OK' and uploadSetting == True:
+    sfx(encodingFinished)
     # Preview video in VLC before uploading
     if openVLC == True:
        os.system(f"vlc {path}/{filename}")
@@ -112,6 +130,7 @@ if event == 'OK' and uploadSetting == True:
 
     # Important stuff is done
     print("\n\nDone uploading!")
+    sfx(uploadFinished)
 
     # Copy the link to clipboard
     if copySetting == True:
