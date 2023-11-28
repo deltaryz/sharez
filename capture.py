@@ -1,6 +1,6 @@
 # Dependencies:
 # slop, ffmpeg, curl, xclip, tk
-# pip install pysimplegui
+# pip install pysimplegui playsound
 
 # I have not been sober for any part of the creation of this script
 
@@ -12,6 +12,7 @@ import signal
 import sys
 import os
 import time
+import threading
 from playsound import playsound
 from time import localtime, strftime
 
@@ -24,9 +25,14 @@ recordFinish = path + "/END.wav"
 encodingFinished = path + "/ENCODE.wav"
 uploadFinished = path + "/UPLOAD.wav"
 
-def sfx(sound):
+# sound = filename
+# sync = true to make program wait for sound to play before proceeding
+def sfx(sound, sync):
     if soundSetting:
-        playsound(sound)
+        if sync:
+            playsound(sound)
+        else:
+            threading.Thread(target=playsound, args=(sound,), daemon=True).start()
 
 # Get current time for video filename
 filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + ".webm"
@@ -59,7 +65,7 @@ for arg in sys.argv:
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
 
-sfx(recordStart)
+sfx(recordStart, True)
 
 print(f"Region: {region}")
 
@@ -109,11 +115,11 @@ os.kill(ffmpeg.pid, signal.SIGINT)
 # Wait for ffmpeg to finish up
 ffmpeg.wait()
 
-sfx(recordFinish)
+sfx(recordFinish, True)
 
 # Only do this if the user pressed OK
 if event == 'OK' and uploadSetting == True:
-    sfx(encodingFinished)
+    sfx(encodingFinished, False)
     # Preview video in VLC before uploading
     if openVLC == True:
        os.system(f"vlc {path}/{filename}")
@@ -130,7 +136,7 @@ if event == 'OK' and uploadSetting == True:
 
     # Important stuff is done
     print("\n\nDone uploading!")
-    sfx(uploadFinished)
+    sfx(uploadFinished, True)
 
     # Copy the link to clipboard
     if copySetting == True:
