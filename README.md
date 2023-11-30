@@ -1,5 +1,6 @@
-# sharez
-Small Python script utilizing slop, ffmpeg, and transfer.sh to replicate "ShareX-esque" video recording functionality on Linux
+![sharez](logo.png)
+
+Your desktop recording prayers have been answered - this is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux/X11. 
 
 ![Demonstration of script usage](demo.gif)
 
