@@ -23,8 +23,9 @@ By default, the recording will be saved in the same directory as `capture.py`.
 * `--no-copy` - do not copy link to clipboard
 * `--no-upload` - do not upload to transfer.sh
 * `--no-soundfx` - do not play sound effects
+* `--no-audio` - do not record audio
 * `--path=/home/example` - path to save video
-* `--filename=example.webm` - filename (extension optional)
+* `--filename=example.webm` - filename (extension can be either `.webm` or `.mp4`)
 * `--vlc` - before uploading, open the video in VLC to preview (requires VLC to be installed)
 
 ### Audio Capture:

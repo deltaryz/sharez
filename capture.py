@@ -4,8 +4,6 @@
 
 # I have not been sober for any part of the creation of this script
 
-# TODO: option for libvpx/webm or x264/mp4
-
 import subprocess
 import PySimpleGUI as sg
 import signal
@@ -35,7 +33,7 @@ def sfx(sound, sync):
             threading.Thread(target=playsound, args=(sound,), daemon=True).start()
 
 # Get current time for video filename
-filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + ".webm"
+filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + ".mp4"
 
 # Check for arguments
 rmSetting = False
@@ -43,6 +41,7 @@ uploadSetting = True
 soundSetting = True
 copySetting = True
 openVLC = False
+recordAudioSetting = True
 
 for arg in sys.argv:
     if arg == "--vlc": # Preview video in VLC before uploading
@@ -55,12 +54,14 @@ for arg in sys.argv:
         copySetting = False
     if arg == "--no-soundfx": # Don't play sounds
         soundSetting = False
+    if arg == "--no-audio": # Don't record audio
+        recordAudioSetting = False
     if "--path=" in arg: # Change path to save video
         _, path = arg.split("=",1)
     if "--filename=" in arg: # change filename of video
         _, filename = arg.split("=",1)
-        if ".webm" not in arg: # make sure we have the extension
-            filename += ".webm"
+        if ".webm" not in filename and ".mp4" not in filename: # make sure we have an
+            filename += ".mp4"
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
@@ -81,10 +82,30 @@ command = ( "ffmpeg "
             "-f x11grab "
             "-show_region 1 "
             f"-i :0.0+{offset[0]},{offset[1]} "
-            "-f alsa " # Comment this line, and the two lines below it, to disable audio recording
-            "-i default " # TODO: --no-audio
-            "-c:a libvorbis -b:a 128k "
+)
+
+audio = (
+            "-f alsa "
+            "-i default "
+)
+
+# only record audio if the user has that enabled
+if recordAudioSetting:
+    command += audio
+
+if ".webm" in filename:
+    command += (
             "-c:v libvpx -b:v 2M "
+            "-c:a libvorbis -b:a 128k "
+    )
+
+if ".mp4" in filename:
+    command += (
+            "-c:v libx264 -vf \"scale=trunc(iw/2)*2:trunc(ih/2)*2\" -b:v 2M " # Make sure resolution is divisible by 2
+            "-c:a aac -b:a 128k "
+    )
+
+command += (\
             f"-y \"{path}/{filename}\"" 
           )
 
