@@ -8,6 +8,8 @@ Small Python script utilizing slop, ffmpeg, and transfer.sh to replicate "ShareX
 
 `pip install pysimplegui playsound`
 
+Wayland is not currently supported, but planned.
+
 ### Usage:
 Either manually trigger the script with `python capture.py`, or create a keyboard shortcut that runs that command. 
 

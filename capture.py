@@ -4,6 +4,10 @@
 
 # I have not been sober for any part of the creation of this script
 
+# TODO: Wayland support
+# https://github.com/emersion/slurp
+# https://github.com/ammen99/wf-recorder
+
 import subprocess
 import PySimpleGUI as sg
 import signal
@@ -16,6 +20,9 @@ from time import localtime, strftime
 
 # Get the current directory the script is running from
 path = os.path.abspath(os.path.dirname(__file__))
+
+# Get screen size
+screen_width, screen_height = sg.Window.get_screen_size()
 
 # Sound effects
 recordStart = path + "/BEGIN.wav"
@@ -65,35 +72,45 @@ for arg in sys.argv:
         _, path = arg.split("=", 1)
     if "--filename=" in arg:  # change filename of video
         _, filename = arg.split("=", 1)
-        if ".webm" not in filename and ".mp4" not in filename:  # make sure we have an
+        if ".webm" not in filename and ".mp4" not in filename:  # make sure we have an extension
             filename += ".mp4"
     if "--framerate=" in arg:  # set recording framerate
         _, framerate = arg.split("=", 1)
         framerateSetting = int(framerate)
 
-print("Framerate: " + str(framerateSetting))
+print(f"Filename:                {filename}")
+print("Framerate:               " + str(framerateSetting))
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
 
 sfx(recordStart, True)
 
-print(f"Region: {region}")
+print(f"Screen size:             {screen_width}x{screen_height}")
+print(f"Region:                  {region}")
 
 # Split strings to get separate numbers
 coords = region.strip().split("+", 1)
 size = coords[0].split("x")
 offset = coords[1].split("+")
 
-# Ensure width and height are even numbers
-width = int(size[0]) // 2 * 2
-height = int(size[1]) // 2 * 2
+print(f"Size (before trimming):  {size[0]}x{size[1]}")
+
+# Ensure width and height are even numbers and fit within screen size
+width = min(int(size[0]), screen_width - int(offset[0]))
+height = min(int(size[1]), screen_height - int(offset[1]))
+
+# Round width and height to even numbers
+width = width // 2 * 2
+height = height // 2 * 2
+
+print(f"Size  (after trimming):  {width}x{height}")
 
 # Command flags for ffmpeg
 command = ("ffmpeg "
            f"-video_size {width}x{height} "
            f"-framerate {framerateSetting} "
-           "-f x11grab "
+           "-f x11grab -thread_queue_size 512 "
            "-show_region 1 "
            f"-i :0.0+{offset[0]},{offset[1]} "
            )
@@ -101,7 +118,7 @@ command = ("ffmpeg "
 # only record audio if the user has that enabled
 if recordAudioSetting:
     command += (
-        "-f alsa "
+        "-f alsa -thread_queue_size 512 "
         "-i default "
     )
 
@@ -121,7 +138,7 @@ command += (
     f"-y \"{path}/{filename}\""
 )
 
-print(f"Running command: {command}\n")
+print(f"\nRunning command: {command}\n")
 
 # Start ffmpeg
 ffmpeg = subprocess.Popen(command, shell=True)
@@ -131,7 +148,6 @@ locationX = int(offset[0])
 locationY = int(offset[1]) + int(size[1])
 
 # Move stop button above region if it's near the bottom
-screen_width, screen_height = sg.Window.get_screen_size()
 if locationY > screen_height - 50:
     locationY = int(offset[1]) - 30
 
