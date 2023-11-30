@@ -26,7 +26,10 @@ By default, the recording will be saved in the same directory as `capture.py`.
 * `--no-audio` - do not record audio
 * `--path=/home/example` - path to save video
 * `--filename=example.webm` - filename (extension can be either `.webm` or `.mp4`)
+* `--framerate=60` - recording framerate (lower this if your PC can't keep up)
 * `--vlc` - before uploading, open the video in VLC to preview (requires VLC to be installed)
+
+Example command: `python3 capture.py --filename=$(date '+%Y-%m-%d_%H.%M.%S').webm --no-upload --path=/home/somebody/captures`
 
 ### Audio Capture:
 
