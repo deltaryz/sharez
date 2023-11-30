@@ -53,7 +53,7 @@ for arg in sys.argv:
         uploadSetting = False
     if arg == "--no-copy": # Don't copy to clipboard
         copySetting = False
-    if arg == "--no-sound": # Don't play sounds
+    if arg == "--no-soundfx": # Don't play sounds
         soundSetting = False
     if "--path=" in arg: # Change path to save video
         _, path = arg.split("=",1)
@@ -81,6 +81,9 @@ command = ( "ffmpeg "
             "-f x11grab "
             "-show_region 1 "
             f"-i :0.0+{offset[0]},{offset[1]} "
+            "-f alsa " # Comment this line, and the two lines below it, to disable audio recording
+            "-i default " # TODO: --no-audio
+            "-c:a libvorbis -b:a 128k "
             "-c:v libvpx -b:v 2M "
             f"-y \"{path}/{filename}\"" 
           )
