@@ -1,6 +1,6 @@
 ![sharez](logo.png)
 
-Your desktop recording prayers have been answered.
+Finally. Your desktop recording prayers have been answered.
 
 This is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux/X11, engineered for ease-of-use and convenience. 
 
