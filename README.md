@@ -1,11 +1,15 @@
 ![sharez](logo.png)
 
-Your desktop recording prayers have been answered - this is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux/X11. 
+Your desktop recording prayers have been answered.
+
+This is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux/X11, engineered for ease-of-use and convenience. 
 
 ![Demonstration of script usage](demo.gif)
 
 ### Dependencies:
-`slop`, `ffmpeg`, `curl`, `xclip`, `tk`
+`python3`, `slop`, `ffmpeg`, `curl`, `xclip`, `tk`
+
+Ubuntu users may also need `python3-tk`
 
 `pip install pysimplegui playsound`
 

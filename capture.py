@@ -141,7 +141,7 @@ command += (
 print(f"\nRunning command: {command}\n")
 
 # Start ffmpeg
-ffmpeg = subprocess.Popen(command, shell=True)
+ffmpeg = subprocess.Popen(command, shell=True, preexec_fn=os.setsid)
 
 # Make sure the stop button is placed near the recording region
 locationX = int(offset[0])
@@ -162,7 +162,7 @@ event, values = sg.Window('Capture',
                           ).read(close=True)
 
 # Tell ffmpeg to stop
-os.kill(ffmpeg.pid, signal.SIGINT)
+os.killpg(os.getpgid(ffmpeg.pid), signal.SIGINT)
 
 # Wait for ffmpeg to finish up
 ffmpeg.wait()
