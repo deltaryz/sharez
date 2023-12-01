@@ -6,25 +6,43 @@ This is a [ShareX](https://getsharex.com/)-inspired video recording utility for 
 
 ![Demonstration of script usage](demo.gif)
 
-### Dependencies:
-`python3`, `slop`, `ffmpeg`, `curl`, `xclip`, `tk`
+## Install Instructions:
 
-Ubuntu users may also need `python3-tk`
+Only Xorg environments are supported. Wayland is not currently implemented, but it is planned.
 
-`pip install pysimplegui playsound`
+- Obtain the repository with `git clone https://github.com/deltaryz/sharez` or downloading and extracting the ZIP from this page
+- If you use `git` to acquire sharez, you can quickly update it with `git pull` inside the `sharez` folder
 
-Wayland is not currently supported, but planned.
+### Arch / Manjaro
+- `sudo pacman -S python3 slop ffmpeg curl xclip tk python-pip`
+- `pip install pysimplegui playsound`
+  - (you may need either venv or `--break-system-packages`)
 
-### Usage:
-Either manually trigger the script with `python capture.py`, or create a keyboard shortcut that runs that command. 
+### Ubuntu / Debian
+- `sudo apt install python3 slop ffmpeg curl xclip tk python3-tk python3-pip`
+- `pip install pysimplegui playsound`
+  - (you may need either venv or `--break-system-packages`)
+
+### Other
+
+Install your distro's equivalents of the following packages:
+- `python3`, `slop`, `ffmpeg`, `curl`, `xclip`, `tk`
+- `pip install pysimplegui playsound`
+
+## Usage:
+Either manually trigger the script with `python3 capture.py`, or create a keyboard shortcut to run this.
+
+- **XFCE**: Keyboard settings, Application Shortcuts tab
 
 Click and drag to select the region to record, and the recording will immediately begin.
 
-There will be an OK button below or above the recording region, when pressed it will immediately stop recording and upload the video to transfer.sh, and then copy a shareable URL to the clipboard.
+There will be OK/Cancel buttons near the recording region, when pressed it will immediately stop recording.
 
-By default, the recording will be saved in the same directory as `capture.py`.
+After the recording stops, if the user pressed OK it will automatically upload the video to transfer.sh, and then copy a shareable URL to the clipboard.
 
-### Commandline Flags:
+The recording will also be saved locally in the same directory as `capture.py`.
+
+## Commandline Flags:
 
 * `--rm` - remove the video file after script runs
 * `--no-copy` - do not copy link to clipboard
@@ -38,7 +56,7 @@ By default, the recording will be saved in the same directory as `capture.py`.
 
 Example command: `python3 capture.py --filename=$(date '+%Y-%m-%d_%H.%M.%S').webm --no-upload --path=/home/somebody/captures`
 
-### Audio Capture:
+## Audio Capture:
 
 It will use the default ALSA audio device for capture. If you have `pavucontrol`, you can change this under the Recording tab **while sharez is actively recording something**, and it will remember what you have selected in future recordings.
 
