@@ -45,8 +45,11 @@ def sfx(sound, sync):
                 sound,), daemon=True).start()
 
 
+# File format, default mp4
+format = "mp4"
+
 # Get current time for video filename
-filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + ".mp4"
+filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + "." + format
 
 # Check for arguments
 rmSetting = False
@@ -74,13 +77,19 @@ for arg in sys.argv:
         _, path = arg.split("=", 1)
     if "--filename=" in arg:  # change filename of video
         _, filename = arg.split("=", 1)
-        if ".webm" not in filename and ".mp4" not in filename:  # make sure we have an extension
+        if filename.endswith('.webm'):
+            format = "webm"
+        elif filename.endswith('.mp4'):
+            format = "mp4"
+        else:  # make sure we have an extension
+            format = "mp4"
             filename += ".mp4"
     if "--framerate=" in arg:  # set recording framerate
         _, framerate = arg.split("=", 1)
         framerateSetting = int(framerate)
 
 print(f"Filename:                {filename}")
+print(f"Format:                  {format}")
 print("Framerate:               " + str(framerateSetting))
 
 # Use slop to select a region
@@ -124,13 +133,13 @@ if recordAudioSetting:
         "-i default "
     )
 
-if ".webm" in filename:
+if format == "webm":
     command += (
         "-c:v libvpx -b:v 2M "
         "-c:a libvorbis -b:a 128k "
     )
 
-if ".mp4" in filename:
+if format == "mp4":
     command += (
         "-c:v libx264 -b:v 2M "
         "-c:a aac -b:a 128k -preset ultrafast "
@@ -147,16 +156,23 @@ ffmpeg = subprocess.Popen(command, shell=True, preexec_fn=os.setsid)
 
 # Make sure the stop button is placed near the recording region
 locationX = int(offset[0])
-locationY = int(offset[1]) + int(size[1])
+locationY = int(offset[1]) + int(size[1]) + 10
 
 # Move stop button above region if it's near the bottom
 if locationY > screen_height - 50:
-    locationY = int(offset[1]) - 30
+    locationY = int(offset[1]) - 40
+
+sg.theme_background_color('#333333')
+
+# TODO: Display format
 
 # Stop button window properties
 event, values = sg.Window('Capture',
-                          [[sg.OK(), sg.Cancel()]],
-                          size=(120, 30),
+                          [[sg.OK(button_color='#a061b5'), sg.Cancel(button_color='#474747'), sg.Text(text=f"{format}",
+                                                                                                      background_color='#2d2d2d', expand_x=True, justification='center', text_color='#929292'), sg.Image(
+                              source=os.path.abspath(os.path.dirname(__file__)) + "/img/logosmall.png", background_color='#333333')
+                            ]],
+                          size=(260, 30),
                           margins=(0, 0),
                           keep_on_top=True,
                           no_titlebar=True,
