@@ -4,6 +4,8 @@
 
 # I have not been sober for any part of the creation of this script
 
+# TODO: gif option
+
 # TODO: Wayland support
 # https://github.com/emersion/slurp
 # https://github.com/ammen99/wf-recorder
@@ -25,10 +27,10 @@ path = os.path.abspath(os.path.dirname(__file__))
 screen_width, screen_height = sg.Window.get_screen_size()
 
 # Sound effects
-recordStart = path + "/BEGIN.wav"
-recordFinish = path + "/END.wav"
-encodingFinished = path + "/ENCODE.wav"
-uploadFinished = path + "/UPLOAD.wav"
+recordStart = path + "/sfx/BEGIN.wav"
+recordFinish = path + "/sfx/END.wav"
+encodingFinished = path + "/sfx/ENCODE.wav"
+uploadFinished = path + "/sfx/UPLOAD.wav"
 
 # sound = filename
 # sync = true to make program wait for sound to play before proceeding

@@ -1,10 +1,10 @@
-![sharez](logo.png)
+![sharez](img/logo.png)
 
 Finally. Your desktop recording prayers have been answered.
 
 This is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux/X11, engineered for ease-of-use and convenience. 
 
-![Demonstration of script usage](demo.gif)
+![Demonstration of script usage](img/demo.gif)
 
 ## Install Instructions:
 
@@ -30,8 +30,9 @@ Install your distro's equivalents of the following packages:
 - `pip install pysimplegui playsound`
 
 ## Usage:
-Either manually trigger the script with `python3 capture.py`, or create a keyboard shortcut to run this.
+Either manually trigger the script with `python3 capture.py`, or create a keyboard shortcut to run this. Use command flags to customize behavior.
 
+- **GNOME**: Settings, Keyboard, View and Customize Shortcuts, Custom Shortcuts, Add Shortcut
 - **XFCE**: Keyboard settings, Application Shortcuts tab
 
 Click and drag to select the region to record, and the recording will immediately begin.
@@ -44,13 +45,15 @@ The recording will also be saved locally in the same directory as `capture.py`.
 
 ## Commandline Flags:
 
+* `--filename=example.webm` - filename / format
+  * Supported formats: `.webm`, `.mp4`
+  * Default filename: `$(date '+%Y-%m-%d_%H.%M.%S').mp4`
 * `--rm` - remove the video file after script runs
 * `--no-copy` - do not copy link to clipboard
 * `--no-upload` - do not upload to transfer.sh
 * `--no-soundfx` - do not play sound effects
 * `--no-audio` - do not record audio
 * `--path=/home/example` - path to save video
-* `--filename=example.webm` - filename (extension can be either `.webm` or `.mp4`)
 * `--framerate=60` - recording framerate (lower this if your PC can't keep up)
 * `--vlc` - before uploading, open the video in VLC to preview (requires VLC to be installed)
 
@@ -62,4 +65,4 @@ It will use the default ALSA audio device for capture. If you have `pavucontrol`
 
 Use the "Monitor of [device]" options to capture your desktop audio output. If these don't show up, you might need to install `PipeWire`.
 
-![Demonstration of how to record desktop audio](pavucontrol.png)
+![Demonstration of how to record desktop audio](img/pavucontrol.png)
