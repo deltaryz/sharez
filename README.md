@@ -75,12 +75,16 @@ All of these parameters are configurable in the GUI settings menu, and saved in 
 Example command: 
 ```sh
 python3 capture.py --filename=$(date '+%Y-%m-%d_%H.%M.%S').webm --upload=true --copy-url=true --path=/home/somebody/captures
-``````
+```
 
 ## Audio Capture:
 
-It will use the default ALSA audio device for capture. If you have `pavucontrol`, you can change this under the Recording tab **while sharez is actively recording something**, and it will remember what you have selected in future recordings.
+Use the "Monitor of [device]" options to capture your desktop audio output. If these don't show up, you might need to install `PipeWire` and its pulseaudio compatibility extensions.
 
-Use the "Monitor of [device]" options to capture your desktop audio output. If these don't show up, you might need to install `PipeWire`.
+There is now a built-in dropdown to select your audio device, but if sharez cannot detect your device this way, you can still attempt other methods.
+
+Using the ALSA Default output, open `pavucontrol` and look at the Recording tab **while sharez is actively recording something**. The dropdown in here will change the device sharez records, and it will remember what you have selected in future recordings.
+
+Another way to view potential recording devices is with `pactl list short sources`, you can use these IDs with the `--audio=69` command flag.
 
 ![Demonstration of how to record desktop audio](img/pavucontrol.png)
