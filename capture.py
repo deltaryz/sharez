@@ -319,6 +319,10 @@ match event:
                 [sg.Text("Play sound effects", background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['playsfx'], key="playsfx", background_color="#333333")]
             ],
+            [  # Record audio
+                [sg.Text("Record audio", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['audio'], key="audio", background_color="#333333")]
+            ],
             [  # Save video file locally
                 [sg.Text("Save video locally", background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['save'], key="save", background_color="#333333")]
