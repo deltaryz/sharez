@@ -13,10 +13,18 @@ import signal
 import PySimpleGUI as sg
 import subprocess
 import webbrowser
+import re
+
+print(
+    "\n"
+    "                       sharez\n"
+    "              made with <3 by deltaryz\n"
+    "                    deltaryz.com\n")
+
 
 # DO NOT EDIT THIS VALUE
 # Config located at ~/.config/sharez
-configVersion = 1.0
+configVersion = 1.1
 
 # TODO: gif option
 # TODO: Option for whether File, Path, or URL should be copied to clipboard
@@ -36,7 +44,7 @@ currentSettings = {
     "filetype": "mp4",
     "bitrate": "10",
     "framerate": "60",
-    "audio": True,
+    "audio": "default",
     "playsfx": True,
     "save": True,
     "savepath": os.path.expanduser("~/Videos"),
@@ -61,18 +69,22 @@ if not os.path.exists(configPath):
         json.dump(currentSettings, json_file)
 else:
     # We do have a config, load it
-    print("Loading user config...")
+    print("Loading user config...\n")
 
     with open(configPath, 'r') as json_file:
         # Check if we need to update the config
         temp = json.load(json_file)
         if "configversion" not in temp:
             temp["configversion"] = "0"  # force update
-        if temp["configversion"] != currentSettings["configversion"]:
+        if temp["configversion"] < currentSettings["configversion"]:
             # Yes, config needs updating
             print(
                 f"Config outdated ({temp['configversion']}). Updating to {currentSettings['configversion']}...")
             newVersion = currentSettings["configversion"]
+            if newVersion >= 1.1:
+                # Patch audio device
+                print("1.0 -> 1.1 audio device default patch applied")
+                temp['audio'] = "default"
             # Load all existing options
             for setting in temp:
                 currentSettings[setting] = temp[setting]
@@ -93,8 +105,8 @@ for setting in overriddenSettings:
     # We will set this true when detecting command flags
     overriddenSettings[setting] = False
 
-print(currentSettings)
-print()
+# print(currentSettings)
+# print()
 
 # Get screen size
 screen_width, screen_height = sg.Window.get_screen_size()
@@ -117,6 +129,53 @@ def sfx(sound, sync):
             threading.Thread(target=playsound, args=(
                 sound,), daemon=True).start()
 
+
+# Figure out audio device names
+cmd = ("pactl list sources | grep 'Description'")
+names = subprocess.check_output(cmd, text=True, shell=True)
+# Split the string into lines
+lines = names.strip().split('\n')
+new_lines = [line.replace('Description: ', '').strip() for line in lines]
+
+# Figure out audio device pulse IDs
+cmd2 = ("pactl list short sources")
+nums = subprocess.check_output(cmd2, text=True, shell=True)
+# Truncate
+# Define the regular expression pattern to match numbers at the beginning of a string
+pattern = r'^\s*(\d+)'
+# Extract numbers from each line and store them in a list
+numbers_list = []
+for line in nums.split('\n'):
+    match = re.findall(pattern, line)
+    if match:
+        numbers_list.append(match[0])
+
+# there's a lot of redundant crap down here... i struggled a little with the implementation here.
+# TODO: clean this
+
+audioDevices = dict(zip(numbers_list, new_lines))
+
+audioDeviceList = {}
+audioDeviceNames = []
+for key in audioDevices:
+    audioDeviceList[key] = f"{key}: {audioDevices[key]}"
+    audioDeviceNames.append(audioDeviceList[key])
+
+audioDeviceList["default"] = "ALSA Default"
+audioDeviceList["disabled"] = "Disabled"
+audioDeviceNames.append("ALSA Default")
+audioDeviceNames.append("Disabled")
+
+# Check if our autoloaded audio device still exists
+if currentSettings['audio'] not in audioDeviceList:
+    badDevice = currentSettings['audio']
+    currentSettings['audio'] = 'default'  # set to default so it doesnt error
+    # Shove that back into config
+    with open(configPath, 'w') as json_file:
+        print(
+            f"Audio device {badDevice} not detected, resetting to default.\n")
+        json.dump(currentSettings, json_file)
+        savedSettings = currentSettings.copy()
 
 # Get current time for video filename
 filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + \
@@ -150,7 +209,7 @@ for arg in sys.argv:
         currentSettings['copyfile'] = str2bool(arg.split("=", 1)[1])
     if "--audio=" in arg:  # Don't record audio
         overriddenSettings['audio'] = True
-        currentSettings['audio'] = str2bool(arg.split("=", 1)[1])
+        _, currentSettings['audio'] = arg.split("=", 1)
     if "--soundfx=" in arg:  # Don't play sounds
         overriddenSettings['playsfx'] = True
         currentSettings['playsfx'] = str2bool(arg.split("=", 1)[1])
@@ -172,9 +231,9 @@ for arg in sys.argv:
         _, framerate = arg.split("=", 1)
         currentSettings['framerate'] = framerate
 
-print("Effective config after processing flags:")
-print(currentSettings)
-print()
+# print("Effective config after processing flags:")
+# print(currentSettings)
+# print()
 
 # Create the output folder if it does not exist
 if not os.path.exists(currentSettings['savepath']):
@@ -186,6 +245,8 @@ print(f"Directory:               {currentSettings['savepath']}")
 print(f"Format:                  {currentSettings['filetype']}")
 print("Bitrate:                 " + currentSettings['bitrate'])
 print("Framerate:               " + currentSettings['framerate'])
+print("Audio device:            " + audioDeviceList[currentSettings['audio']])
+print()
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
@@ -222,13 +283,19 @@ command = ("ffmpeg "
            )
 
 # only record audio if the user has that enabled
-if currentSettings['audio']:
-    command += (
-        "-f alsa -thread_queue_size 512 "
-        "-i default "
-    )
+if currentSettings['audio'] != "disabled":
+    if currentSettings['audio'] == "default":
+        command += (
+            "-f alsa -thread_queue_size 512 "
+            "-i default "
+        )
+    else:
+        # use pulseaudio device ID from `pactl list short sources`
+        command += (
+            "-f pulse -thread_queue_size 512 "
+            f"-i {currentSettings['audio']} "
+        )
 
-# TODO: Make this actually use the bitrate we have set
 
 if currentSettings['filetype'] == "webm":
     command += (
@@ -246,7 +313,7 @@ command += (
     f"-y \"{currentSettings['savepath']}/{filename}\""
 )
 
-print(f"\nRunning command:         {command}\n")
+print(f"\nRunning command:         {command}\n\n-- -- -- -- --\n")
 
 # Start ffmpeg
 ffmpeg = subprocess.Popen(command, shell=True, preexec_fn=os.setsid)
@@ -258,6 +325,11 @@ locationY = int(offset[1]) + int(size[1]) + 10
 # Move toolbar above region if it's near the bottom
 if locationY > screen_height - 50:
     locationY = int(offset[1]) - 40
+
+# If it's now less than 0 just put it in the corner lol
+# TODO: Intelligently handle this on both axes
+if locationY < 0:
+    locationY = 0
 
 sg.theme_background_color('#333333')
 
@@ -302,6 +374,16 @@ match event:
                 [sg.Text("\nCommandline flags will override these options.",
                          background_color="#222222", pad=(5, 10), expand_x=True, justification="center", text_color="#BFBFBF", size=(None, 3))]
             ],
+            [  # Record audio
+                [sg.Text("Record audio", background_color="#333333", expand_x=True),
+                 sg.Combo(audioDeviceNames, background_color="#FFFFFF", size=(34, None), default_value=audioDeviceList[savedSettings['audio']], readonly=True, key="audio")]
+            ],
+            [  # Path to save
+                # TODO: Validate this and make sure it resolves
+                # TODO: Browse button with file picker dialog
+                [sg.Text("Local video path        ", background_color="#333333", expand_x=True),
+                 sg.InputText(key="savepath", size=(36, None), default_text=savedSettings['savepath'])]
+            ],
             [  # Filetype
                 [sg.Text("Filetype", background_color="#333333", expand_x=True),
                  sg.Combo(['webm', 'mp4'], size=(6, None), default_value=savedSettings['filetype'], key='filetype', readonly=True)],
@@ -319,19 +401,9 @@ match event:
                 [sg.Text("Play sound effects", background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['playsfx'], key="playsfx", background_color="#333333")]
             ],
-            [  # Record audio
-                [sg.Text("Record audio", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['audio'], key="audio", background_color="#333333")]
-            ],
             [  # Save video file locally
                 [sg.Text("Save video locally", background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['save'], key="save", background_color="#333333")]
-            ],
-            [  # Path to save
-                # TODO: Validate this and make sure it resolves
-                # TODO: Browse button with file picker dialog
-                [sg.Text("Local video path        ", background_color="#333333", expand_x=True),
-                 sg.InputText(key="savepath", size=(32, None), default_text=savedSettings['savepath'])]
             ],
             [  # Copy file path to clipboard
                 [sg.Text("Copy file path to clipboard", background_color="#333333", expand_x=True),
@@ -351,7 +423,7 @@ match event:
                  sg.Checkbox("", default=savedSettings['upload'], key="upload", background_color="#333333")]
             ],
             [  # Copy URL to clipboard after upload
-                [sg.Text("Copy URL to clipboard after upload", background_color="#333333", expand_x=True),
+                [sg.Text("Copy URL to clipboard", background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['copyurl'], key="copyurl", background_color="#333333")]
             ],
             [  # Open URL in browser
@@ -364,12 +436,11 @@ match event:
             #      sg.Combo(['Audio1', 'Audio2'], default_value='Audio1', key='audiodevice', readonly=True)],
             # ],
             [
-                sg.Text("\nTo set which audio device is captured, first start a recording and leave it running.\n"
-                        "  CLICK HERE to open `pavucontrol`, and check the Recording tab while it is recording.  \n"
-                        "Your selection will be remembered for future recordings.\n\n"
-                        "Use 'Monitor of [Device]' to capture outputs, i.e. your desktop speakers.\n"
-                        "If you don't have those, consider using PipeWire.\n",
-                        background_color="#444444", text_color="#BFBFBF", justification="center", key="pavucontrol", enable_events=True)
+                sg.Text(
+                    "\nUse 'Monitor of [Device]' to capture outputs,\n"
+                    "i.e. your desktop speakers.\n\n"
+                    "If you don't have those, consider using PipeWire.\n",
+                    background_color="#444444", expand_x=True, text_color="#BFBFBF", justification="center", key="pavucontrol", enable_events=True)
             ],
             [
                 sg.Image(
@@ -394,13 +465,22 @@ match event:
 
                 for value in values:
                     savedSettings[value] = values[value]
+
+                    # special handling for the audio dropdown
+                    if value == "audio":
+                        for key in audioDeviceList:
+                            # working in reverse, finding the key that matches the value
+                            if audioDeviceList[key] == values[value]:
+                                savedSettings[value] = key
+
+                print()
                 print(savedSettings)
 
                 # Write everything back into config
                 with open(configPath, 'w') as json_file:
                     json.dump(savedSettings, json_file)
 
-                print("Config written to file.\n")
+                print("\nConfig written to file.\n")
 
                 break
             elif event == 'source':

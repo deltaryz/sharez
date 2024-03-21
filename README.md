@@ -58,10 +58,13 @@ All of these parameters are configurable in the GUI settings menu, and saved in 
   * Supported formats: `.webm`, `.mp4`
   * Default filename: `$(date '+%Y-%m-%d_%H.%M.%S').mp4`
   * Extension is optional, if omitted will use saved setting
+* `--audio=default` - record audio
+  * Supports pulseaudio device IDs obtained with `pactl list short sources`
+  * `default` uses ALSA default, can be configured with `pavucontrol`
+  * Can be `disabled`
 * `--path=/home/example` - path to save video
 * `--save=true` - keep local recording after script finishes
 * `--soundfx=true` - play sound effects
-* `--audio=true` - record audio
 * `--copy-path=false` - copy file path to clipboard
 * `--copy-file=true` - copy file to clipboard
 * `--upload=false` - upload to transfer.sh
