@@ -1,43 +1,116 @@
-# Dependencies:
-# slop, ffmpeg, curl, xclip, tk
-# pip install pysimplegui playsound
+# sharez
+# made with <3 by deltaryz
+# check out my music at deltaryz.com
 
-# I have not been sober for any part of the creation of this script
+from time import localtime, strftime
+from playsound import playsound
+import threading
+import time
+import os
+import sys
+import json
+import signal
+import PySimpleGUI as sg
+import subprocess
+import webbrowser
+
+# DO NOT EDIT THIS VALUE
+# Config located at ~/.config/sharez
+configVersion = 1.0
 
 # TODO: gif option
+# TODO: Option for whether File, Path, or URL should be copied to clipboard
 
 # TODO: Wayland support
 # https://github.com/emersion/slurp
 # https://github.com/ammen99/wf-recorder
 
-import subprocess
-import PySimpleGUI as sg
-import signal
-import sys
-import os
-import time
-import threading
-from playsound import playsound
-from time import localtime, strftime
 
-# Get the current directory the script is running from
-path = os.path.abspath(os.path.dirname(__file__))
+# Directories
+scriptPath = os.path.abspath(os.path.dirname(__file__))
+configPath = os.path.expanduser("~/.config/sharez/config.json")
+
+# Default settings, will be overridden by config & command flags
+currentSettings = {
+    "configversion": configVersion,
+    "filetype": "mp4",
+    "bitrate": "10",
+    "framerate": "60",
+    "audio": True,
+    "playsfx": True,
+    "save": True,
+    "savepath": os.path.expanduser("~/Videos"),
+    "copypath": False,
+    "copyfile": True,
+    "preview": False,
+    "upload": False,
+    "copyurl": True,
+    "openinbrowser": False,
+}
+
+# Check if we have a config
+if not os.path.exists(configPath):
+    # No config file has been created yet, populate with defaults
+    print("No config found, creating...")
+
+    # Make folder
+    os.makedirs(os.path.expanduser("~/.config/sharez"), exist_ok=True)
+
+    # Make file
+    with open(configPath, 'w') as json_file:
+        json.dump(currentSettings, json_file)
+else:
+    # We do have a config, load it
+    print("Loading user config...")
+
+    with open(configPath, 'r') as json_file:
+        # Check if we need to update the config
+        temp = json.load(json_file)
+        if "configversion" not in temp:
+            temp["configversion"] = "0"  # force update
+        if temp["configversion"] != currentSettings["configversion"]:
+            # Yes, config needs updating
+            print(
+                f"Config outdated ({temp['configversion']}). Updating to {currentSettings['configversion']}...")
+            newVersion = currentSettings["configversion"]
+            # Load all existing options
+            for setting in temp:
+                currentSettings[setting] = temp[setting]
+            currentSettings["configversion"] = newVersion
+            # Write everything back into config
+            with open(configPath, 'w') as json_file:
+                json.dump(currentSettings, json_file)
+        else:
+            # No updating needed, just load it
+            currentSettings = temp
+
+# Use a separate dict so command overrides don't get mixed in the config
+savedSettings = currentSettings.copy()
+
+# Keep track of which settings have been overridden
+overriddenSettings = currentSettings.copy()
+for setting in overriddenSettings:
+    # We will set this true when detecting command flags
+    overriddenSettings[setting] = False
+
+print(currentSettings)
+print()
 
 # Get screen size
 screen_width, screen_height = sg.Window.get_screen_size()
 
 # Sound effects
-recordStart = path + "/sfx/BEGIN.wav"
-recordFinish = path + "/sfx/END.wav"
-encodingFinished = path + "/sfx/ENCODE.wav"
-uploadFinished = path + "/sfx/UPLOAD.wav"
-
-# sound = filename
-# sync = true to make program wait for sound to play before proceeding
+recordStart = scriptPath + "/sfx/BEGIN.wav"
+recordFinish = scriptPath + "/sfx/END.wav"
+encodingFinished = scriptPath + "/sfx/ENCODE.wav"
+uploadFinished = scriptPath + "/sfx/UPLOAD.wav"
 
 
 def sfx(sound, sync):
-    if soundSetting:
+    # Play Sound Effect
+    # sound = filename
+    # sync = true to make program wait for sound to play before proceeding
+    if currentSettings['playsfx']:
         if sync:
             playsound(sound)
         else:
@@ -45,52 +118,74 @@ def sfx(sound, sync):
                 sound,), daemon=True).start()
 
 
-# File format, default mp4
-format = "mp4"
-
 # Get current time for video filename
-filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + "." + format
+filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + \
+    "." + currentSettings['filetype']
 
-# Check for arguments
-rmSetting = False
-uploadSetting = True
-soundSetting = True
-copySetting = True
-openVLC = False
-recordAudioSetting = True
-framerateSetting = 60
 
+def str2bool(v):
+    return str(v).lower() in ("yes", "true", "1")
+
+
+# Check arguments
 for arg in sys.argv:
-    if arg == "--vlc":  # Preview video in VLC before uploading
-        openVLC = True
-    if arg == "--rm":  # Remove video after script runs
-        rmSetting = True
-    if arg == "--no-upload":  # Don't upload to transfer.sh
-        uploadSetting = False
-    if arg == "--no-copy":  # Don't copy to clipboard
-        copySetting = False
-    if arg == "--no-soundfx":  # Don't play sounds
-        soundSetting = False
-    if arg == "--no-audio":  # Don't record audio
-        recordAudioSetting = False
+    if "--preview=" in arg:  # Preview video in VLC before uploading
+        overriddenSettings['preview'] = True
+        currentSettings['preview'] = str2bool(arg.split("=", 1)[1])
+    if "--save=" in arg:  # Remove video after script runs
+        overriddenSettings['save'] = True
+        print(str2bool(arg.split("=", 1)[1]))
+        currentSettings['save'] = str2bool(arg.split("=", 1)[1])
+    if "--upload=" in arg:  # Don't upload to transfer.sh
+        overriddenSettings['upload'] = True
+        currentSettings['upload'] = str2bool(arg.split("=", 1)[1])
+    if "--copy-url=" in arg:  # Copy URL to clipboard
+        overriddenSettings['copyurl'] = True
+        currentSettings['copyurl'] = str2bool(arg.split("=", 1)[1])
+    if "--copy-path=" in arg:  # Copy file path to clipboard
+        overriddenSettings['copypath'] = True
+        currentSettings['copypath'] = str2bool(arg.split("=", 1)[1])
+    if "--copy-file=" in arg:  # Copy file to clipboard
+        overriddenSettings['copyfile'] = True
+        currentSettings['copyfile'] = str2bool(arg.split("=", 1)[1])
+    if "--audio=" in arg:  # Don't record audio
+        overriddenSettings['audio'] = True
+        currentSettings['audio'] = str2bool(arg.split("=", 1)[1])
+    if "--soundfx=" in arg:  # Don't play sounds
+        overriddenSettings['playsfx'] = True
+        currentSettings['playsfx'] = str2bool(arg.split("=", 1)[1])
     if "--path=" in arg:  # Change path to save video
-        _, path = arg.split("=", 1)
-    if "--filename=" in arg:  # change filename of video
+        overriddenSettings['savepath'] = True
+        _, currentSettings['savepath'] = arg.split("=", 1)
+    if "--filename=" in arg:  # change filename of video (extension optional)
         _, filename = arg.split("=", 1)
         if filename.endswith('.webm'):
-            format = "webm"
+            overriddenSettings['filetype'] = True
+            currentSettings['filetype'] = "webm"
         elif filename.endswith('.mp4'):
-            format = "mp4"
+            overriddenSettings['filetype'] = True
+            currentSettings['filetype'] = "mp4"
         else:  # make sure we have an extension
-            format = "mp4"
-            filename += ".mp4"
+            filename += currentSettings['filetype']
     if "--framerate=" in arg:  # set recording framerate
+        overriddenSettings['framerate'] = True
         _, framerate = arg.split("=", 1)
-        framerateSetting = int(framerate)
+        currentSettings['framerate'] = framerate
+
+print("Effective config after processing flags:")
+print(currentSettings)
+print()
+
+# Create the output folder if it does not exist
+if not os.path.exists(currentSettings['savepath']):
+    print(f"Path {currentSettings['savepath']} does not exist, creating...")
+    os.makedirs(currentSettings['savepath'])
 
 print(f"Filename:                {filename}")
-print(f"Format:                  {format}")
-print("Framerate:               " + str(framerateSetting))
+print(f"Directory:               {currentSettings['savepath']}")
+print(f"Format:                  {currentSettings['filetype']}")
+print("Bitrate:                 " + currentSettings['bitrate'])
+print("Framerate:               " + currentSettings['framerate'])
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
@@ -107,7 +202,7 @@ offset = coords[1].split("+")
 
 print(f"Size (before trimming):  {size[0]}x{size[1]}")
 
-# Ensure width and height are even numbers and fit within screen size
+# fit within screen size
 width = min(int(size[0]), screen_width - int(offset[0]))
 height = min(int(size[1]), screen_height - int(offset[1]))
 
@@ -120,59 +215,63 @@ print(f"Size  (after trimming):  {width}x{height}")
 # Command flags for ffmpeg
 command = ("ffmpeg "
            f"-video_size {width}x{height} "
-           f"-framerate {framerateSetting} "
+           f"-framerate {currentSettings['framerate']} "
            "-f x11grab -thread_queue_size 512 "
            "-show_region 1 "
            f"-i :0.0+{offset[0]},{offset[1]} "
            )
 
 # only record audio if the user has that enabled
-if recordAudioSetting:
+if currentSettings['audio']:
     command += (
         "-f alsa -thread_queue_size 512 "
         "-i default "
     )
 
-if format == "webm":
+# TODO: Make this actually use the bitrate we have set
+
+if currentSettings['filetype'] == "webm":
     command += (
-        "-c:v libvpx -b:v 2M "
+        f"-c:v libvpx -b:v {currentSettings['bitrate']}M "
         "-c:a libvorbis -b:a 128k "
     )
 
-if format == "mp4":
+if currentSettings['filetype'] == "mp4":
     command += (
-        "-c:v libx264 -b:v 2M "
+        f"-c:v libx264 -b:v {currentSettings['bitrate']}M "
         "-c:a aac -b:a 128k -preset ultrafast "
     )
 
 command += (
-    f"-y \"{path}/{filename}\""
+    f"-y \"{currentSettings['savepath']}/{filename}\""
 )
 
-print(f"\nRunning command: {command}\n")
+print(f"\nRunning command:         {command}\n")
 
 # Start ffmpeg
 ffmpeg = subprocess.Popen(command, shell=True, preexec_fn=os.setsid)
 
-# Make sure the stop button is placed near the recording region
-locationX = int(offset[0])
+# Make sure the toolbar is placed near the recording region
+locationX = int(offset[0]) - 3
 locationY = int(offset[1]) + int(size[1]) + 10
 
-# Move stop button above region if it's near the bottom
+# Move toolbar above region if it's near the bottom
 if locationY > screen_height - 50:
     locationY = int(offset[1]) - 40
 
 sg.theme_background_color('#333333')
 
-# TODO: Display format
-
-# Stop button window properties
+# Toolbar window properties
 event, values = sg.Window('Capture',
-                          [[sg.OK(button_color='#a061b5'), sg.Cancel(button_color='#474747'), sg.Text(text=f"{format}",
-                                                                                                      background_color='#2d2d2d', expand_x=True, justification='center', text_color='#929292'), sg.Image(
-                              source=os.path.abspath(os.path.dirname(__file__)) + "/img/logosmall.png", background_color='#333333')
+                          [[sg.Button("", key="OK", expand_x=True, image_source=scriptPath + "/img/done.png", image_subsample=3, button_color=('#3BFF62')),
+                            sg.Button("", key="X", image_source=scriptPath + "/img/close.png",
+                                      image_subsample=3, pad=(4, 4), button_color='#FF3232'),
+                            sg.Text(text=f"{currentSettings['filetype']}", background_color='#2d2d2d',
+                                    expand_x=True, justification='center', text_color='#929292'),
+                            sg.Button("", key="Cfg", image_source=scriptPath +
+                                      "/img/settings.png", image_subsample=3, button_color='#474747'),
                             ]],
-                          size=(260, 30),
+                          size=(160, 30),
                           margins=(0, 0),
                           keep_on_top=True,
                           no_titlebar=True,
@@ -185,39 +284,185 @@ os.killpg(os.getpgid(ffmpeg.pid), signal.SIGINT)
 # Wait for ffmpeg to finish up
 ffmpeg.wait()
 
-sfx(recordFinish, True)
+print()
 
-# Only do this if the user pressed OK
-if event == 'OK' and uploadSetting == True:
-    sfx(encodingFinished, False)
-    # Preview video in VLC before uploading
-    if openVLC == True:
-        os.system(f"vlc {path}/{filename}")
-    print("\n\nOK, now uploading...\n\n")
+# Which button did the user press?
+match event:
+    case "Cfg":
+        print("\nConfig panel opened.\nRemoving video...")
+        sfx(recordFinish, True)
+        os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
 
-    # Curl command flags
-    commandcurl = ("curl "
-                   f"--upload-file \"{path}/{filename}\" "
-                   "https://transfer.sh"
-                   )
+        # TODO: indicate anything overridden with flags using disabled=settingsOverrides["key"]
+        # TODO: display command flags in GUI (to reduce clutter, use a ? mouseover)
+        # TODO: split this panel into a function so we can re-run it if a validation fails
 
-    # Run curl, uploading video to transfer.sh
-    link = subprocess.check_output(commandcurl, text=True, shell=True)
+        window = sg.Window('Options', [
+            [
+                [sg.Text("\nCommandline flags will override these options.",
+                         background_color="#222222", pad=(5, 10), expand_x=True, justification="center", text_color="#BFBFBF", size=(None, 3))]
+            ],
+            [  # Filetype
+                [sg.Text("Filetype", background_color="#333333", expand_x=True),
+                 sg.Combo(['webm', 'mp4'], size=(6, None), default_value=savedSettings['filetype'], key='filetype', readonly=True)],
+            ],
+            [  # Bitrate
+                [sg.Text("Bitrate (MB)", background_color="#333333", expand_x=True),
+                 sg.InputText(key="bitrate", size=(3, None), default_text=savedSettings['bitrate'])]
+            ],
+            [  # Framerate
+                # TODO: Validate this and make sure it's an int
+                [sg.Text("Frame rate", background_color="#333333", expand_x=True),
+                 sg.InputText(key="framerate", size=(3, None), default_text=savedSettings['framerate'])]
+            ],
+            [  # Sound effects
+                [sg.Text("Play sound effects", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['playsfx'], key="playsfx", background_color="#333333")]
+            ],
+            [  # Save video file locally
+                [sg.Text("Save video locally", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['save'], key="save", background_color="#333333")]
+            ],
+            [  # Path to save
+                # TODO: Validate this and make sure it resolves
+                # TODO: Browse button with file picker dialog
+                [sg.Text("Local video path        ", background_color="#333333", expand_x=True),
+                 sg.InputText(key="savepath", size=(32, None), default_text=savedSettings['savepath'])]
+            ],
+            [  # Copy file path to clipboard
+                [sg.Text("Copy file path to clipboard", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['copypath'], key="copypath", background_color="#333333")]
+            ],
+            [  # Copy path to clipboard
+                [sg.Text("Copy file to clipboard", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['copyfile'], key="copyfile", background_color="#333333")]
+            ],
+            [  # Preview in VLC
+                # TODO: Use system default for filetype
+                [sg.Text("Preview in VLC", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['preview'], key="preview", background_color="#333333")]
+            ],
+            [  # Upload to transfer.sh
+                [sg.Text("Upload to transfer.sh", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['upload'], key="upload", background_color="#333333")]
+            ],
+            [  # Copy URL to clipboard after upload
+                [sg.Text("Copy URL to clipboard after upload", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['copyurl'], key="copyurl", background_color="#333333")]
+            ],
+            [  # Open URL in browser
+                [sg.Text("Open URL in browser", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['openinbrowser'], key="openinbrowser", background_color="#333333")]
+            ],
+            # [  # Audio device selection
+            #     # TODO: Make audio device selection work
+            #     [sg.Text("Audio Device", background_color="#333333", expand_x=True),
+            #      sg.Combo(['Audio1', 'Audio2'], default_value='Audio1', key='audiodevice', readonly=True)],
+            # ],
+            [
+                sg.Text("\nTo set which audio device is captured, first start a recording and leave it running.\n"
+                        "  CLICK HERE to open `pavucontrol`, and check the Recording tab while it is recording.  \n"
+                        "Your selection will be remembered for future recordings.\n\n"
+                        "Use 'Monitor of [Device]' to capture outputs, i.e. your desktop speakers.\n"
+                        "If you don't have those, consider using PipeWire.\n",
+                        background_color="#444444", text_color="#BFBFBF", justification="center", key="pavucontrol", enable_events=True)
+            ],
+            [
+                sg.Image(
+                    source=scriptPath + "/img/logosmall.png", background_color="#333333", key='source', enable_events=True),
+                sg.Text(" ", expand_x=True,
+                        background_color="#333333"),
+                sg.Button("OK")
+            ]
+        ],
+            resizable=False,
+            icon=scriptPath + "/img/icon.png"
+        )
 
-    # Important stuff is done
-    print("\n\nDone uploading!")
-    sfx(uploadFinished, True)
+        while True:
+            event, values = window.read()
+            if event == sg.WINDOW_CLOSED:
+                print("Window closed, discarding changes.\n")
+                break
+            if event == 'OK':
+                # TODO: Make sure to validate input & prompt user for invalid shit
+                print()
 
-    # Copy the link to clipboard
-    if copySetting == True:
-        os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
-        print("Copied to clipboard!")
+                for value in values:
+                    savedSettings[value] = values[value]
+                print(savedSettings)
 
-    print(f"\nLink: {link}")
+                # Write everything back into config
+                with open(configPath, 'w') as json_file:
+                    json.dump(savedSettings, json_file)
 
-print(f"Path: {path}/{filename}\n")
+                print("Config written to file.\n")
 
-# Remove video file if command flag --rm is passed or the user pressed Cancel
-if rmSetting == True or event == 'Cancel':
-    print("Removing video...")
-    os.system(f"rm \"{path}/{filename}\"")
+                break
+            elif event == 'source':
+                webbrowser.open("https://github.com/deltaryz/sharez")
+            elif event == 'pavucontrol':
+                print("Opening pavucontrol...")
+                os.system("pavucontrol &")
+
+        window.close()
+
+    case "OK":
+        sfx(encodingFinished, True)
+
+        # Copy path to clipboard
+        if currentSettings['copypath'] == True:
+            os.system(
+                f"echo \"{currentSettings['savepath']}/{filename}\" | xclip -i -selection clipboard")
+            print("Path copied to clipboard.")
+
+        # Copy file to clipboard
+        if currentSettings['copyfile']:
+            os.system(
+                f"echo \"file:///{currentSettings['savepath']}/{filename}\" | xclip -sel clip -t text/uri-list -i")
+            print("File copied to clipboard.")
+
+        # TODO: Use configurable media player instead of hardcoding VLC
+        # Preview video in VLC
+        if currentSettings['preview'] == True:
+            os.system(f"vlc {currentSettings['savepath']}/{filename}")
+
+        if currentSettings['upload'] == True:
+            print("\n\nOK, now uploading...\n\n")
+
+            # Curl command flags
+            commandcurl = ("curl "
+                           f"--upload-file \"{currentSettings['savepath']}/{filename}\" "
+                           "https://transfer.sh"
+                           )
+
+            # Run curl, uploading video to transfer.sh
+            link = subprocess.check_output(commandcurl, text=True, shell=True)
+
+            # Important stuff is done
+            print("\n\nDone uploading!")
+            sfx(uploadFinished, True)
+
+            # Copy the link to clipboard
+            if currentSettings['copyurl'] == True:
+                os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
+                print("URL copied to clipboard.")
+
+            # Open link in browser
+            if currentSettings['openinbrowser']:
+                webbrowser.open(link)
+
+            print(f"\nLink: {link}")
+
+        print(f"Path: {currentSettings['savepath']}/{filename}")
+
+        if currentSettings['save'] == False:
+            print("Removing video...\n")
+            sfx(recordFinish, True)
+            os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
+    case _:
+        print("Removing video...\n")
+        sfx(recordFinish, True)
+        os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
+
+print()

@@ -30,7 +30,9 @@ Install your distro's equivalents of the following packages:
 - `pip install pysimplegui playsound`
 
 ## Usage:
-Either manually trigger the script with `python3 capture.py`, or create a keyboard shortcut to run this. Use command flags to customize behavior.
+Either manually trigger the script with `python3 capture.py`, or create a keyboard shortcut to run this.
+
+![Example keyboard shortcut in XFCE](img/shortcut.png)
 
 - **GNOME**: Settings, Keyboard, View and Customize Shortcuts, Custom Shortcuts, Add Shortcut
 - **XFCE**: Keyboard settings, Application Shortcuts tab
@@ -39,25 +41,38 @@ Click and drag to select the region to record, and the recording will immediatel
 
 There will be OK/Cancel buttons near the recording region, when pressed it will immediately stop recording.
 
-After the recording stops, if the user pressed OK it will automatically upload the video to transfer.sh, and then copy a shareable URL to the clipboard.
+After the recording stops, if the user pressed OK it will automatically save, upload, or copy to clipboard - behavior is configurable with GUI settings and command flags.
 
-The recording will also be saved locally in the same directory as `capture.py`.
+By default, recordings will save to `~/Videos`.
 
-## Commandline Flags:
+## Configuration:
+
+All of these parameters are configurable in the GUI settings menu, and saved in `~/.config/sharez/config.json`. Command flags take priority over saved settings.
+
+![Screenshot of settings menu](img/options.png)
+
+### NOTE: While developing this, transfer.sh appears to have gone offline. Curl will freeze while trying to upload. If it doesn't come back, I will look into alternatives.
+#### Advanced users can [self-host transfer.sh](https://github.com/dutchcoders/transfer.sh), or achieve similar functionality with your save path exposed to a webserver.
 
 * `--filename=example.webm` - filename / format
   * Supported formats: `.webm`, `.mp4`
   * Default filename: `$(date '+%Y-%m-%d_%H.%M.%S').mp4`
-* `--rm` - remove the video file after script runs
-* `--no-copy` - do not copy link to clipboard
-* `--no-upload` - do not upload to transfer.sh
-* `--no-soundfx` - do not play sound effects
-* `--no-audio` - do not record audio
+  * Extension is optional, if omitted will use saved setting
 * `--path=/home/example` - path to save video
+* `--save=true` - keep local recording after script finishes
+* `--soundfx=true` - play sound effects
+* `--audio=true` - record audio
+* `--copy-path=false` - copy file path to clipboard
+* `--copy-file=true` - copy file to clipboard
+* `--upload=false` - upload to transfer.sh
+* `--copy-url=true` - copy URL to clipboard
 * `--framerate=60` - recording framerate (lower this if your PC can't keep up)
-* `--vlc` - before uploading, open the video in VLC to preview (requires VLC to be installed)
+* `--preview=true` - open the video in VLC to preview (requires VLC to be installed)
 
-Example command: `python3 capture.py --filename=$(date '+%Y-%m-%d_%H.%M.%S').webm --no-upload --path=/home/somebody/captures`
+Example command: 
+```sh
+python3 capture.py --filename=$(date '+%Y-%m-%d_%H.%M.%S').webm --upload=true --copy-url=true --path=/home/somebody/captures
+``````
 
 ## Audio Capture:
 
