@@ -214,8 +214,13 @@ for arg in sys.argv:
         overriddenSettings['playsfx'] = True
         currentSettings['playsfx'] = str2bool(arg.split("=", 1)[1])
     if "--path=" in arg:  # Change path to save video
+        argpath = arg.split("=", 1)[1]
+        if argpath.endswith("/"):
+            # Remove / from end of path
+            argpath = argpath[:-1]
         overriddenSettings['savepath'] = True
-        _, currentSettings['savepath'] = arg.split("=", 1)
+        currentSettings['savepath'] = argpath
+
     if "--filename=" in arg:  # change filename of video (extension optional)
         _, filename = arg.split("=", 1)
         if filename.endswith('.webm'):
@@ -225,7 +230,7 @@ for arg in sys.argv:
             overriddenSettings['filetype'] = True
             currentSettings['filetype'] = "mp4"
         else:  # make sure we have an extension
-            filename += currentSettings['filetype']
+            filename += "." + currentSettings['filetype']
     if "--framerate=" in arg:  # set recording framerate
         overriddenSettings['framerate'] = True
         _, framerate = arg.split("=", 1)
