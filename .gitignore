@@ -1,3 +1,4 @@
 *.webm
 *.mp4
 .vscode/
+capture-to-webserver.sh

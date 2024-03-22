@@ -2,7 +2,7 @@
 
 Finally. Your desktop recording prayers have been answered.
 
-This is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux/X11, engineered for ease-of-use and convenience. 
+This is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux/X11, engineered to minimize required clicks/keypresses and be friendly to scripting and automation.
 
 ![Demonstration of script usage](img/demo.gif)
 
@@ -49,6 +49,8 @@ By default, recordings will save to `~/Videos`.
 
 All of these parameters are configurable in the GUI settings menu, and saved in `~/.config/sharez/config.json`. Command flags take priority over saved settings.
 
+Checkboxes/flags are listed in the order they are executed by the program.
+
 ![Screenshot of settings menu](img/options.png)
 
 ### NOTE: While developing this, transfer.sh appears to have gone offline. Curl will freeze while trying to upload. If it doesn't come back, I will look into alternatives.
@@ -62,19 +64,32 @@ All of these parameters are configurable in the GUI settings menu, and saved in 
   * Supports pulseaudio device IDs obtained with `pactl list short sources`
   * `default` uses ALSA default, can be configured with `pavucontrol`
   * Can be `disabled`
-* `--path=/home/example` - path to save video
-* `--save=true` - keep local recording after script finishes
+* `--path=/home/example/Videos` - path to save video
+* `--framerate=60` - recording framerate (lower this if your PC can't keep up)
 * `--soundfx=true` - play sound effects
 * `--copy-path=false` - copy file path to clipboard
 * `--copy-file=true` - copy file to clipboard
+* `--preview=false` - open the video in VLC to preview (requires VLC to be installed)
 * `--upload=false` - upload to transfer.sh
 * `--copy-url=true` - copy URL to clipboard
-* `--framerate=60` - recording framerate (lower this if your PC can't keep up)
-* `--preview=true` - open the video in VLC to preview (requires VLC to be installed)
+* `--save=true` - keep local recording after script finishes
 
-Example command: 
+Example command to upload to transfer.sh and remove local file after finishing: 
 ```sh
-python3 capture.py --filename=$(date '+%Y-%m-%d_%H.%M.%S').webm --upload=true --copy-url=true --path=/home/somebody/captures
+python3 capture.py --filename=$(date '+%Y-%m-%d_%H.%M.%S').webm --upload=true --copy-url=true --save=false
+```
+
+Example script to use in conjunction with personal webserver:
+```bash
+#!/bin/bash
+
+FILENAME=$(date '+%Y-%m-%d_%H.%M.%S').mp4
+FILEPATH=/example/www/s/
+SHARE_URL=https://example.website/s/
+
+python3 capture.py --filename=$FILENAME --path=$FILEPATH
+
+echo $SHARE_URL$FILENAME | xclip -i -selection clipboard
 ```
 
 ## Audio Capture:

@@ -418,10 +418,6 @@ match event:
 
                 ])],
 
-            [  # Save video file locally
-                [sg.Text("Save video locally", justification="right", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['save'], key="save", background_color="#333333")]
-            ],
             [  # Copy file path to clipboard
                 [sg.Text("Copy path to clipboard", justification="right", background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['copypath'], key="copypath", background_color="#333333")]
@@ -446,6 +442,10 @@ match event:
             [  # Open URL in browser
                 [sg.Text("Open URL in browser", justification="right", background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['openinbrowser'], key="openinbrowser", background_color="#333333")]
+            ],
+            [  # Save video file locally
+                [sg.Text("Save video locally", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['save'], key="save", background_color="#333333")]
             ],
             [
                 [sg.Stretch(background_color="#2b2b2b"),
