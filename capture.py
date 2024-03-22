@@ -374,84 +374,92 @@ match event:
                 [sg.Text("\nCommandline flags will override these options.",
                          background_color="#222222", pad=(5, 10), expand_x=True, justification="center", text_color="#BFBFBF", size=(None, 3))]
             ],
-            [  # Record audio
-                [sg.Text("Record audio", background_color="#333333", expand_x=True),
-                 sg.Combo(audioDeviceNames, background_color="#FFFFFF", size=(34, None), default_value=audioDeviceList[savedSettings['audio']], readonly=True, key="audio")]
-            ],
-            [  # Path to save
-                # TODO: Validate this and make sure it resolves
-                # TODO: Browse button with file picker dialog
-                [sg.Text("Local video path        ", background_color="#333333", expand_x=True),
-                 sg.InputText(key="savepath", size=(36, None), default_text=savedSettings['savepath'])]
-            ],
-            [  # Filetype
-                [sg.Text("Filetype", background_color="#333333", expand_x=True),
-                 sg.Combo(['webm', 'mp4'], size=(6, None), default_value=savedSettings['filetype'], key='filetype', readonly=True)],
-            ],
-            [  # Bitrate
-                [sg.Text("Bitrate (MB)", background_color="#333333", expand_x=True),
-                 sg.InputText(key="bitrate", size=(3, None), default_text=savedSettings['bitrate'])]
-            ],
-            [  # Framerate
-                # TODO: Validate this and make sure it's an int
-                [sg.Text("Frame rate", background_color="#333333", expand_x=True),
-                 sg.InputText(key="framerate", size=(3, None), default_text=savedSettings['framerate'])]
-            ],
-            [  # Sound effects
-                [sg.Text("Play sound effects", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['playsfx'], key="playsfx", background_color="#333333")]
-            ],
-            [  # Save video file locally
-                [sg.Text("Save video locally", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['save'], key="save", background_color="#333333")]
-            ],
-            [  # Copy file path to clipboard
-                [sg.Text("Copy file path to clipboard", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['copypath'], key="copypath", background_color="#333333")]
-            ],
-            [  # Copy path to clipboard
-                [sg.Text("Copy file to clipboard", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['copyfile'], key="copyfile", background_color="#333333")]
-            ],
-            [  # Preview in VLC
-                # TODO: Use system default for filetype
-                [sg.Text("Preview in VLC", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['preview'], key="preview", background_color="#333333")]
-            ],
-            [  # Upload to transfer.sh
-                [sg.Text("Upload to transfer.sh", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['upload'], key="upload", background_color="#333333")]
-            ],
-            [  # Copy URL to clipboard after upload
-                [sg.Text("Copy URL to clipboard", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['copyurl'], key="copyurl", background_color="#333333")]
-            ],
-            [  # Open URL in browser
-                [sg.Text("Open URL in browser", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['openinbrowser'], key="openinbrowser", background_color="#333333")]
-            ],
-            # [  # Audio device selection
-            #     # TODO: Make audio device selection work
-            #     [sg.Text("Audio Device", background_color="#333333", expand_x=True),
-            #      sg.Combo(['Audio1', 'Audio2'], default_value='Audio1', key='audiodevice', readonly=True)],
-            # ],
             [
                 sg.Text(
                     "\nUse 'Monitor of [Device]' to capture outputs,\n"
                     "i.e. your desktop speakers.\n\n"
-                    "If you don't have those, consider using PipeWire.\n",
-                    background_color="#444444", expand_x=True, text_color="#BFBFBF", justification="center", key="pavucontrol", enable_events=True)
+                    "May require PipeWire.\n",
+                    background_color="#444444", pad=((5, 5), (0, 10)), expand_x=True, text_color="#BFBFBF", justification="center", key="pavucontrol", enable_events=True)
+            ],
+            [  # Record audio
+                [sg.Text("Record audio", justification="right", background_color="#333333", expand_x=True),
+                 sg.Combo(audioDeviceNames, background_color="#FFFFFF", size=(25, None), default_value=audioDeviceList[savedSettings['audio']], readonly=True, key="audio")]
+            ],
+            [  # Path to save
+                # TODO: Validate this and make sure it resolves
+                # TODO: Browse button with file picker dialog
+                [sg.Text("Local video path", justification="right", background_color="#333333", expand_x=True),
+                 sg.InputText(key="savepath", size=(27, None), default_text=savedSettings['savepath'])]
+            ],
+
+            [sg.Column([
+                [sg.Text("Filetype", justification="right", background_color="#333333"),
+                 sg.Combo(['webm', 'mp4'], size=(6, None), default_value=savedSettings['filetype'], key='filetype', readonly=True)],
+            ], pad=(0, 0)),
+                sg.Stretch(background_color="#333333"), sg.Column([
+                    [sg.Text("Bitrate (MB)", justification="right", background_color="#333333"),
+                     sg.InputText(key="bitrate", size=(3, None), pad=(0, 0), default_text=savedSettings['bitrate'])]
+
+                ])],
+
+            [sg.Column([
+                [sg.Text("Frame rate", justification="right", background_color="#333333"),
+                 sg.InputText(key="framerate", size=(3, None), default_text=savedSettings['framerate'])]
+
+            ], pad=(0, 0)),
+                sg.Stretch(background_color="#333333"), sg.Column([
+                    [sg.Text("Play sound effects", justification="right", background_color="#333333"),
+                     sg.Checkbox("", default=savedSettings['playsfx'], pad=(0, 0), key="playsfx", background_color="#333333")]
+
+                ])],
+
+            [  # Save video file locally
+                [sg.Text("Save video locally", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['save'], key="save", background_color="#333333")]
+            ],
+            [  # Copy file path to clipboard
+                [sg.Text("Copy path to clipboard", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['copypath'], key="copypath", background_color="#333333")]
+            ],
+            [  # Copy path to clipboard
+                [sg.Text("Copy file to clipboard", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['copyfile'], key="copyfile", background_color="#333333")]
+            ],
+            [  # Preview in VLC
+                # TODO: Use system default for filetype
+                [sg.Text("Preview in VLC", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['preview'], key="preview", background_color="#333333")]
+            ],
+            [  # Upload to transfer.sh
+                [sg.Text("Upload to transfer.sh", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['upload'], key="upload", background_color="#333333")]
+            ],
+            [  # Copy URL to clipboard after upload
+                [sg.Text("Copy URL to clipboard", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['copyurl'], key="copyurl", background_color="#333333")]
+            ],
+            [  # Open URL in browser
+                [sg.Text("Open URL in browser", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=savedSettings['openinbrowser'], key="openinbrowser", background_color="#333333")]
+            ],
+            [
+                [sg.Stretch(background_color="#2b2b2b"),
+                 sg.Text("made with <3 by\ndeltaryz", enable_events=True, key="deltaryz", pad=((15, 15), (15, 0)), justification="center", text_color="#969696",
+                         background_color="#333333"),
+                 sg.Stretch(background_color="#2b2b2b")
+                 ]
             ],
             [
                 sg.Image(
-                    source=scriptPath + "/img/logosmall.png", background_color="#333333", key='source', enable_events=True),
-                sg.Text(" ", expand_x=True,
-                        background_color="#333333"),
-                sg.Button("OK")
+                    source=scriptPath + "/img/logosmall.png", pad=((0, 0), (8, 0)), background_color="#333333", key='source', enable_events=True),
+                sg.Stretch(background_color="#333333"),
+                sg.Button("OK", button_color=(
+                    "#BF40BF"), pad=((0, 0), (5, 6)))
             ]
         ],
             resizable=False,
-            icon=scriptPath + "/img/icon.png"
+            icon=scriptPath + "/img/icon.png",
+            location=(69, 69)
         )
 
         while True:
@@ -483,6 +491,8 @@ match event:
                 print("\nConfig written to file.\n")
 
                 break
+            elif event == 'deltaryz':
+                webbrowser.open("https://deltaryz.com")
             elif event == 'source':
                 webbrowser.open("https://github.com/deltaryz/sharez")
             elif event == 'pavucontrol':
