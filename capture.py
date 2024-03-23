@@ -130,16 +130,25 @@ def sfx(sound, sync):
                 sound,), daemon=True).start()
 
 
+print("Detecting audio devices...")
 # Figure out audio device names
 cmd = ("pactl list sources | grep 'Description'")
-names = subprocess.check_output(cmd, text=True, shell=True)
+names = ""
+try:
+    names = subprocess.check_output(cmd, text=True, shell=True)
+except subprocess.CalledProcessError as e:
+    print(e)
 # Split the string into lines
 lines = names.strip().split('\n')
 new_lines = [line.replace('Description: ', '').strip() for line in lines]
 
 # Figure out audio device pulse IDs
 cmd2 = ("pactl list short sources")
-nums = subprocess.check_output(cmd2, text=True, shell=True)
+nums = ""
+try:
+    nums = subprocess.check_output(cmd2, text=True, shell=True)
+except subprocess.CalledProcessError as e:
+    print(e)
 # Truncate
 # Define the regular expression pattern to match numbers at the beginning of a string
 pattern = r'^\s*(\d+)'
@@ -176,6 +185,8 @@ if currentSettings['audio'] not in audioDeviceList:
             f"Audio device {badDevice} not detected, resetting to default.\n")
         json.dump(currentSettings, json_file)
         savedSettings = currentSettings.copy()
+
+print()
 
 # Get current time for video filename
 filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + \
@@ -339,6 +350,7 @@ if locationY < 0:
 sg.theme_background_color('#333333')
 
 # Toolbar window properties
+# TODO: Second duration indicator
 event, values = sg.Window('Capture',
                           [[sg.Button("", key="OK", expand_x=True, image_source=scriptPath + "/img/done.png", image_subsample=3, button_color=('#3BFF62')),
                             sg.Button("", key="X", image_source=scriptPath + "/img/close.png",
@@ -355,13 +367,15 @@ event, values = sg.Window('Capture',
                           location=(locationX, locationY)
                           ).read(close=True)
 
+# TODO: command flag to hide options button
+
 # Tell ffmpeg to stop
 os.killpg(os.getpgid(ffmpeg.pid), signal.SIGINT)
 
 # Wait for ffmpeg to finish up
 ffmpeg.wait()
 
-print()
+print("\n-- -- -- -- --")
 
 # Which button did the user press?
 match event:
@@ -507,6 +521,9 @@ match event:
         window.close()
 
     case "OK":
+
+        print()
+
         sfx(encodingFinished, True)
 
         # Copy path to clipboard
@@ -556,11 +573,11 @@ match event:
         print(f"Path: {currentSettings['savepath']}/{filename}")
 
         if currentSettings['save'] == False:
-            print("Removing video...\n")
+            print("Removing video...")
             sfx(recordFinish, True)
             os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
     case _:
-        print("Removing video...\n")
+        print("\nCancelled.\nRemoving video...")
         sfx(recordFinish, True)
         os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
 

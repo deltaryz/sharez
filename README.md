@@ -83,13 +83,13 @@ Example script to use in conjunction with personal webserver:
 ```bash
 #!/bin/bash
 
-FILENAME=$(date '+%Y-%m-%d_%H.%M.%S').mp4
-FILEPATH=/example/www/s/
-SHARE_URL=https://example.website/s/
+filename=$(date '+%Y-%m-%d_%H.%M.%S').mp4
+filepath=/example/www/s/
+share_url=https://example.website/s/
 
-python3 capture.py --filename=$FILENAME --path=$FILEPATH
+python3 capture.py --filename=$filename --path=$filepath
 
-echo $SHARE_URL$FILENAME | xclip -i -selection clipboard
+echo $share_url$filename | xclip -i -selection clipboard
 ```
 
 ## Audio Capture:
