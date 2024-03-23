@@ -170,6 +170,9 @@ for key in audioDevices:
     audioDeviceList[key] = f"{key}: {audioDevices[key]}"
     audioDeviceNames.append(audioDeviceList[key])
 
+if len(audioDeviceNames) == 0:
+    print("\nNo audio devices detected - do you have pactl?")
+
 audioDeviceList["default"] = "ALSA Default"
 audioDeviceList["disabled"] = "Disabled"
 audioDeviceNames.append("ALSA Default")
@@ -478,7 +481,7 @@ match event:
         ],
             resizable=False,
             icon=scriptPath + "/img/icon.png",
-            location=(69, 69)
+            location=(69, 69)  # nice
         )
 
         while True:

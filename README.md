@@ -17,17 +17,23 @@ Only Xorg environments are supported. Wayland is not currently implemented, but 
 - `sudo pacman -S python3 slop ffmpeg curl xclip tk python-pip`
 - `pip install pysimplegui playsound`
   - (you may need either venv or `--break-system-packages`)
+- (Optional) It is strongly recommended to use PipeWire with WirePlumber and PulseAudio support for maximum functionality:
+  - `sudo pacman -S pipewire pipewire-audio pipewire-pulse`
 
 ### Ubuntu / Debian
 - `sudo apt install python3 slop ffmpeg curl xclip tk python3-tk python3-pip`
 - `pip install pysimplegui playsound`
   - (you may need either venv or `--break-system-packages`)
+- (Optional) It is strongly recommended to use PipeWire with WirePlumber and PulseAudio support for maximum functionality:
+  - [Debian instructions](https://wiki.debian.org/PipeWire#Installation)
+  - [Ubuntu instructions](https://gist.github.com/the-spyke/2de98b22ff4f978ebf0650c90e82027e) - only required for 22.04 and earlier, >=22.10 have this by default
 
 ### Other
 
 Install your distro's equivalents of the following packages:
 - `python3`, `slop`, `ffmpeg`, `curl`, `xclip`, `tk`
 - `pip install pysimplegui playsound`
+- (Optional) `pipewire`, `pipewire-audio`, `pipewire-pulse`, `wireplumber`
 
 ## Usage:
 Either manually trigger the script with `python3 capture.py`, or create a keyboard shortcut to run this.
