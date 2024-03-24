@@ -59,8 +59,8 @@ Checkboxes/flags are listed in the order they are executed by the program.
 
 ![Screenshot of settings menu](img/options.png)
 
-### NOTE: While developing this, transfer.sh appears to have gone offline. Curl will freeze while trying to upload. If it doesn't come back, I will look into alternatives.
-#### Advanced users can [self-host transfer.sh](https://github.com/dutchcoders/transfer.sh), or achieve similar functionality with your save path exposed to a webserver.
+### NOTE: While developing this, the public transfer.sh service appears to have gone offline. This default URL will not function.
+#### Advanced users can [self-host transfer.sh](https://github.com/dutchcoders/transfer.sh), or achieve similar functionality with your save path exposed to a webserver (see example below).
 
 * `--filename=example.webm` - filename / format
   * Supported formats: `.webm`, `.mp4`
@@ -76,13 +76,14 @@ Checkboxes/flags are listed in the order they are executed by the program.
 * `--copy-path=false` - copy file path to clipboard
 * `--copy-file=true` - copy file to clipboard
 * `--preview=false` - open the video in VLC to preview (requires VLC to be installed)
+* `--tshurl=https://transfer.sh` - URL of [transfer.sh service](https://github.com/dutchcoders/transfer.sh)
 * `--upload=false` - upload to transfer.sh
 * `--copy-url=true` - copy URL to clipboard
 * `--save=true` - keep local recording after script finishes
 
 Example command to upload to transfer.sh and remove local file after finishing: 
 ```sh
-python3 capture.py --filename=$(date '+%Y-%m-%d_%H.%M.%S').webm --upload=true --copy-url=true --save=false
+python3 capture.py --upload=true --tshurl=https://example.website --copy-url=true --save=false
 ```
 
 Example script to use in conjunction with personal webserver:

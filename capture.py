@@ -24,7 +24,7 @@ print(
 
 # DO NOT EDIT THIS VALUE
 # Config located at ~/.config/sharez
-configVersion = 1.1
+configVersion = 1.2
 
 # TODO: gif option
 # TODO: Option for whether File, Path, or URL should be copied to clipboard
@@ -51,6 +51,7 @@ currentSettings = {
     "copypath": False,
     "copyfile": True,
     "preview": False,
+    "tshurl": "https://transfer.sh",
     "upload": False,
     "copyurl": True,
     "openinbrowser": False,
@@ -81,7 +82,7 @@ else:
             print(
                 f"Config outdated ({temp['configversion']}). Updating to {currentSettings['configversion']}...")
             newVersion = currentSettings["configversion"]
-            if newVersion >= 1.1:
+            if newVersion >= 1.1 and temp['configversion'] < 1.1:
                 # Patch audio device
                 print("1.0 -> 1.1 audio device default patch applied")
                 temp['audio'] = "default"
@@ -209,6 +210,10 @@ for arg in sys.argv:
         overriddenSettings['save'] = True
         print(str2bool(arg.split("=", 1)[1]))
         currentSettings['save'] = str2bool(arg.split("=", 1)[1])
+    if "--tshurl=" in arg:  # Custom transfer.sh url
+        argurl = arg.split("=", 1)[1]
+        overriddenSettings['tshurl'] = True
+        currentSettings['tshurl'] = argurl
     if "--upload=" in arg:  # Don't upload to transfer.sh
         overriddenSettings['upload'] = True
         currentSettings['upload'] = str2bool(arg.split("=", 1)[1])
@@ -449,7 +454,9 @@ match event:
                  sg.Checkbox("", default=savedSettings['preview'], key="preview", background_color="#333333")]
             ],
             [  # Upload to transfer.sh
-                [sg.Text("Upload to transfer.sh", justification="right", background_color="#333333", expand_x=True),
+                [sg.InputText(key="tshurl", size=(18, None), default_text=savedSettings['tshurl']),
+                 sg.Text("Upload to transfer.sh", justification="right",
+                         background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['upload'], key="upload", background_color="#333333")]
             ],
             [  # Copy URL to clipboard after upload
@@ -546,34 +553,52 @@ match event:
         if currentSettings['preview'] == True:
             os.system(f"vlc {currentSettings['savepath']}/{filename}")
 
+        print(f"Path: {currentSettings['savepath']}/{filename}")
+
+        if "https://transfer.sh" in currentSettings['tshurl']:
+            print("\n==========\nNotice: https://transfer.sh has been temporarily(?) disabled as it appears to have gone offline.\nConsider self-hosting: https://github.com/dutchcoders/transfer.sh\n==========\n")
+            currentSettings['upload'] = False
+
         if currentSettings['upload'] == True:
             print("\n\nOK, now uploading...\n\n")
+
+            # make sure we have a slash at the end
+            tshurl = currentSettings["tshurl"]
+            if not tshurl.endswith("/"):
+                tshurl += "/"
 
             # Curl command flags
             commandcurl = ("curl "
                            f"--upload-file \"{currentSettings['savepath']}/{filename}\" "
-                           "https://transfer.sh"
+                           f"{tshurl}"
                            )
 
-            # Run curl, uploading video to transfer.sh
-            link = subprocess.check_output(commandcurl, text=True, shell=True)
+            link = ""
+            try:
+                # Run curl, uploading video to transfer.sh
+                link = subprocess.check_output(
+                    commandcurl, text=True, shell=True)
 
-            # Important stuff is done
-            print("\n\nDone uploading!")
-            sfx(uploadFinished, True)
+                # inline link for seamless sharing
+                inline_link = link.replace(tshurl, tshurl + "inline/")
 
-            # Copy the link to clipboard
-            if currentSettings['copyurl'] == True:
-                os.system(f"echo \"{link}\" | xclip -i -selection clipboard")
-                print("URL copied to clipboard.")
+                # Important stuff is done
+                print("\n\nDone uploading!")
+                sfx(uploadFinished, True)
 
-            # Open link in browser
-            if currentSettings['openinbrowser']:
-                webbrowser.open(link)
+                # Copy the link to clipboard
+                if currentSettings['copyurl'] == True:
+                    os.system(
+                        f"echo \"{inline_link}\" | xclip -i -selection clipboard")
+                    print("URL copied to clipboard.")
 
-            print(f"\nLink: {link}")
+                # Open link in browser
+                if currentSettings['openinbrowser']:
+                    webbrowser.open(inline_link)
 
-        print(f"Path: {currentSettings['savepath']}/{filename}")
+                print(f"\nLink: {inline_link}")
+            except subprocess.CalledProcessError as e:
+                print(e)
 
         if currentSettings['save'] == False:
             print("Removing video...")
