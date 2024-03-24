@@ -206,6 +206,9 @@ for arg in sys.argv:
     if "--preview=" in arg:  # Preview video in VLC before uploading
         overriddenSettings['preview'] = True
         currentSettings['preview'] = str2bool(arg.split("=", 1)[1])
+    if "--browser=" in arg:  # Show transfer.sh URL in browser
+        overriddenSettings['openinbrowser'] = True
+        currentSettings['openinbrowser'] = str2bool(arg.split("=", 1)[1])
     if "--save=" in arg:  # Remove video after script runs
         overriddenSettings['save'] = True
         print(str2bool(arg.split("=", 1)[1]))
@@ -567,6 +570,7 @@ match event:
             if not tshurl.endswith("/"):
                 tshurl += "/"
 
+            # TODO: Do this with something built into python instead of curl
             # Curl command flags
             commandcurl = ("curl "
                            f"--upload-file \"{currentSettings['savepath']}/{filename}\" "
@@ -594,7 +598,7 @@ match event:
 
                 # Open link in browser
                 if currentSettings['openinbrowser']:
-                    webbrowser.open(inline_link)
+                    webbrowser.open(link)
 
                 print(f"\nLink: {inline_link}")
             except subprocess.CalledProcessError as e:

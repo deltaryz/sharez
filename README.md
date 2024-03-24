@@ -79,6 +79,7 @@ Checkboxes/flags are listed in the order they are executed by the program.
 * `--tshurl=https://transfer.sh` - URL of [transfer.sh service](https://github.com/dutchcoders/transfer.sh)
 * `--upload=false` - upload to transfer.sh
 * `--copy-url=true` - copy URL to clipboard
+* `--browser=false` - open URL in browser
 * `--save=true` - keep local recording after script finishes
 
 Example command to upload to transfer.sh and remove local file after finishing: 
