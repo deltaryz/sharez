@@ -51,8 +51,8 @@ parser.add_argument("--copy-url", type=bool,
                     help="BOOL - Copy URL to clipboard")
 parser.add_argument("--browser", type=bool,
                     help="BOOL - Open URL in browser")
-parser.add_argument("--save", type=bool,
-                    help="BOOL - Keep file locally")
+parser.add_argument("--delete", type=bool,
+                    help="BOOL - Delete local file")
 
 args = parser.parse_args()
 
@@ -304,6 +304,11 @@ if args.browser is not None:
     overriddenSettings['openinbrowser'] = True
     currentSettings['openinbrowser'] = args.browser
 
+# Delete local file
+if args.delete is not None:
+    overriddenSettings['save'] = True
+    currentSettings['save'] = not args.delete
+
 # DONE PROCESSING ARGUMENTS
 
 # print("Effective config after processing flags:")
@@ -518,9 +523,9 @@ match event:
                 [sg.Text("Open URL in browser", justification="right", background_color="#333333", expand_x=True),
                  sg.Checkbox("", default=savedSettings['openinbrowser'], key="openinbrowser", background_color="#333333")]
             ],
-            [  # Save video file locally
-                [sg.Text("Save video locally", justification="right", background_color="#333333", expand_x=True),
-                 sg.Checkbox("", default=savedSettings['save'], key="save", background_color="#333333")]
+            [  # Save file locally
+                [sg.Text("Delete local file", justification="right", background_color="#333333", expand_x=True),
+                 sg.Checkbox("", default=not savedSettings['save'], key="save", background_color="#333333")]
             ],
             [
                 [sg.Stretch(background_color="#2b2b2b"),
@@ -560,6 +565,10 @@ match event:
                             # working in reverse, finding the key that matches the value
                             if audioDeviceList[key] == values[value]:
                                 savedSettings[value] = key
+
+                    # invert this because of the verbage
+                    if value == "save":
+                        savedSettings[value] = not values[value]
 
                 print()
                 print(savedSettings)
