@@ -2,6 +2,8 @@
 # made with <3 by deltaryz
 # check out my music at deltaryz.com
 
+# TODO: System notifications (notify-send)
+
 from time import localtime, strftime
 from playsound import playsound
 import threading
@@ -226,10 +228,6 @@ print()
 filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + \
     "." + currentSettings['filetype']
 
-
-def str2bool(v):
-    return str(v).lower() in ("yes", "true", "1")
-
 # PROCESS ARGUMENTS
 
 
@@ -440,7 +438,7 @@ print("\n-- -- -- -- --")
 match event:
     case "Cfg":
         print("\nConfig panel opened.\nRemoving video...")
-        sfx(recordFinish, True)
+        sfx(recordFinish, False)
         os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
 
         # TODO: indicate anything overridden with flags using disabled=settingsOverrides["key"]
@@ -585,8 +583,6 @@ match event:
 
         print()
 
-        sfx(encodingFinished, True)
-
         # Copy path to clipboard
         if currentSettings['copypath'] == True:
             os.system(
@@ -606,6 +602,9 @@ match event:
 
         print(f"Path: {currentSettings['savepath']}/{filename}")
 
+        sfx(encodingFinished, True)
+
+        # transfer.sh went offline so don't even bother trying
         if "https://transfer.sh" in currentSettings['tshurl']:
             print("\n==========\nNotice: https://transfer.sh has been temporarily(?) disabled as it appears to have gone offline.\nConsider self-hosting: https://github.com/dutchcoders/transfer.sh\n==========\n")
             sfx(uploadFailed, True)
@@ -637,7 +636,6 @@ match event:
 
                 # Important stuff is done
                 print("\n\nDone uploading!")
-                sfx(uploadFinished, True)
 
                 # Copy the link to clipboard
                 if currentSettings['copyurl'] == True:
@@ -651,6 +649,7 @@ match event:
                     webbrowser.open(link)
 
                 print(f"\nLink: {inline_link}")
+                sfx(uploadFinished, True)
             except subprocess.CalledProcessError as e:
                 print()
                 print(e)
@@ -658,11 +657,11 @@ match event:
 
         if currentSettings['save'] == False:
             print("Removing video...")
-            sfx(recordFinish, True)
             os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
+            sfx(recordFinish, True)
     case _:
         print("\nCancelled.\nRemoving video...")
-        sfx(recordFinish, True)
         os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
+        sfx(recordFinish, True)
 
 print()
