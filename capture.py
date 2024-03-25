@@ -15,15 +15,12 @@ import audio
 from time import localtime, strftime
 from playsound import playsound
 import threading
-import time
 import os
-import sys
 import json
 import signal
 import PySimpleGUI as sg
 import subprocess
 import webbrowser
-import re
 import argparse
 
 print(
@@ -308,45 +305,57 @@ height = height // 2 * 2
 
 print(f"Size  (after trimming):  {width}x{height}")
 
-# Command flags for ffmpeg
-command = ("ffmpeg "
-           f"-video_size {width}x{height} "
-           f"-framerate {currentSettings['framerate']} "
-           "-f x11grab -thread_queue_size 512 "
-           "-show_region 1 "
-           f"-i :0.0+{offset[0]},{offset[1]} "
-           )
+session = "X11"
 
-# only record audio if the user has that enabled
-if currentSettings['audio'] != "disabled":
-    if currentSettings['audio'] == "default":
+if 'WAYLAND_DISPLAY' in os.environ:
+    # We are using Wayland!
+    session = "Wayland"
+
+print(f"\nSession:                 {session}")
+
+if session == "X11":
+    # Command flags for ffmpeg
+    command = ("ffmpeg "
+               f"-video_size {width}x{height} "
+               f"-framerate {currentSettings['framerate']} "
+               "-f x11grab -thread_queue_size 512 "
+               "-show_region 1 "
+               f"-i :0.0+{offset[0]},{offset[1]} "
+               )
+
+    # only record audio if the user has that enabled
+    if currentSettings['audio'] != "disabled":
+        if currentSettings['audio'] == "default":
+            command += (
+                "-f alsa -thread_queue_size 512 "
+                "-i default "
+            )
+        else:
+            # use pulseaudio device ID from `pactl list short sources`
+            command += (
+                "-f pulse -thread_queue_size 512 "
+                f"-i {currentSettings['audio']} "
+            )
+
+    if currentSettings['filetype'] == "webm":
         command += (
-            "-f alsa -thread_queue_size 512 "
-            "-i default "
+            f"-c:v libvpx -b:v {currentSettings['bitrate']}M "
+            "-c:a libvorbis -b:a 128k "
         )
-    else:
-        # use pulseaudio device ID from `pactl list short sources`
+
+    if currentSettings['filetype'] == "mp4":
         command += (
-            "-f pulse -thread_queue_size 512 "
-            f"-i {currentSettings['audio']} "
+            f"-c:v libx264 -b:v {currentSettings['bitrate']}M "
+            "-c:a aac -b:a 128k -preset ultrafast "
         )
 
-
-if currentSettings['filetype'] == "webm":
     command += (
-        f"-c:v libvpx -b:v {currentSettings['bitrate']}M "
-        "-c:a libvorbis -b:a 128k "
+        f"-y \"{currentSettings['savepath']}/{filename}\""
     )
+elif session == "Wayland":
+    sfx(uploadFailed, True)
+    raise RuntimeError("Wayland support not implemented")
 
-if currentSettings['filetype'] == "mp4":
-    command += (
-        f"-c:v libx264 -b:v {currentSettings['bitrate']}M "
-        "-c:a aac -b:a 128k -preset ultrafast "
-    )
-
-command += (
-    f"-y \"{currentSettings['savepath']}/{filename}\""
-)
 
 print(f"\nRunning command:         {command}\n\n-- -- -- -- --\n")
 
