@@ -28,29 +28,31 @@ parser = argparse.ArgumentParser(
     formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=27))
 
 parser.add_argument("--filename", type=str,
-                    help="Filename (supported extensions: .webm, .mp4, none)")
+                    help="STRING - Filename (supported extensions: .webm, .mp4, none)")
 parser.add_argument("--audio", type=str,
-                    help="`default`, `disabled`, or audio device ID - obtain with `pactl list short sources`")
-parser.add_argument("--path", type=str, help="Path to save file")
-parser.add_argument("--framerate", type=int, help="Recording framerate")
+                    help="STRING - `default`, `disabled`, or audio device ID - obtain with `pactl list short sources`")
+parser.add_argument("--path", type=str,
+                    help="STRING - Path to save file")
+parser.add_argument("--framerate", type=int,
+                    help="INT - Recording framerate")
 parser.add_argument("--soundfx", type=bool,
-                    help="Enable/disable sound effects")
+                    help="BOOL - Play sound effects")
 parser.add_argument("--copy-path", type=bool,
-                    help="Enable/disable copying path to clipboard")
+                    help="BOOL - Copy path to clipboard")
 parser.add_argument("--copy-file", type=bool,
-                    help="Enable/disable copying file to clipboard")
+                    help="BOOL - Copy file to clipboard")
 parser.add_argument("--preview", type=bool,
-                    help="Enable/disable preview in VLC")
+                    help="BOOL - Preview in VLC")
 parser.add_argument("--tsh-url", type=str,
-                    help="Custom transfer.sh service URL - https://github.com/dutchcoders/transfer.sh")
+                    help="STRING - Custom transfer.sh service URL - https://github.com/dutchcoders/transfer.sh")
 parser.add_argument("--upload", type=bool,
-                    help="Enable/disable uploading to transfer.sh")
+                    help="BOOL - Upload to transfer.sh")
 parser.add_argument("--copy-url", type=bool,
-                    help="Enable/disable copying URL to clipboard")
+                    help="BOOL - Copy URL to clipboard")
 parser.add_argument("--browser", type=bool,
-                    help="Enable/disable opening URL in browser")
+                    help="BOOL - Open URL in browser")
 parser.add_argument("--save", type=bool,
-                    help="Enable/disable saving of file locally")
+                    help="BOOL - Keep file locally")
 
 args = parser.parse_args()
 
