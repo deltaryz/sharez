@@ -27,7 +27,6 @@ print(
 configVersion = 1.2
 
 # TODO: gif option
-# TODO: Option for whether File, Path, or URL should be copied to clipboard
 
 # TODO: Wayland support
 # https://github.com/emersion/slurp
@@ -117,6 +116,7 @@ recordStart = scriptPath + "/sfx/BEGIN.wav"
 recordFinish = scriptPath + "/sfx/END.wav"
 encodingFinished = scriptPath + "/sfx/ENCODE.wav"
 uploadFinished = scriptPath + "/sfx/UPLOAD.wav"
+uploadFailed = scriptPath + "/sfx/FAIL.wav"
 
 
 def sfx(sound, sync):
@@ -560,6 +560,7 @@ match event:
 
         if "https://transfer.sh" in currentSettings['tshurl']:
             print("\n==========\nNotice: https://transfer.sh has been temporarily(?) disabled as it appears to have gone offline.\nConsider self-hosting: https://github.com/dutchcoders/transfer.sh\n==========\n")
+            sfx(uploadFailed, True)
             currentSettings['upload'] = False
 
         if currentSettings['upload'] == True:
@@ -602,7 +603,9 @@ match event:
 
                 print(f"\nLink: {inline_link}")
             except subprocess.CalledProcessError as e:
+                print()
                 print(e)
+                sfx(uploadFailed, True)
 
         if currentSettings['save'] == False:
             print("Removing video...")
