@@ -4,6 +4,8 @@
 
 # TODO: System notifications (notify-send)
 
+import upload
+
 from time import localtime, strftime
 from playsound import playsound
 import threading
@@ -622,31 +624,12 @@ match event:
             currentSettings['upload'] = False
 
         if currentSettings['upload'] == True:
-            print("\n\nOK, now uploading...\n\n")
+            # Upload to transfer.sh
+            preview_link, inline_link = upload.transfersh(
+                currentSettings['savepath'], filename, currentSettings['tshurl'])
 
-            # make sure we have a slash at the end
-            tshurl = currentSettings["tshurl"]
-            if not tshurl.endswith("/"):
-                tshurl += "/"
-
-            # TODO: Do this with something built into python instead of curl
-            # Curl command flags
-            commandcurl = ("curl "
-                           f"--upload-file \"{currentSettings['savepath']}/{filename}\" "
-                           f"{tshurl}"
-                           )
-
-            link = ""
-            try:
-                # Run curl, uploading video to transfer.sh
-                link = subprocess.check_output(
-                    commandcurl, text=True, shell=True)
-
-                # inline link for seamless sharing
-                inline_link = link.replace(tshurl, tshurl + "inline/")
-
-                # Important stuff is done
-                print("\n\nDone uploading!")
+            if preview_link is not None and inline_link is not None:
+                # It worked! :)
 
                 # Copy the link to clipboard
                 if currentSettings['copyurl'] == True:
@@ -656,14 +639,14 @@ match event:
 
                 # Open link in browser
                 if currentSettings['openinbrowser']:
-                    print("Uploading in browser...")
-                    webbrowser.open(link)
+                    print("Opening in browser...")
+                    webbrowser.open(preview_link)
 
                 print(f"\nLink: {inline_link}")
                 sfx(uploadFinished, True)
-            except subprocess.CalledProcessError as e:
-                print()
-                print(e)
+            else:
+                # It failed! :(
+                # TODO: Display GUI
                 sfx(uploadFailed, True)
 
         if currentSettings['save'] == False:
