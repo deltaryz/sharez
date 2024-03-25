@@ -3,8 +3,14 @@
 # check out my music at deltaryz.com
 
 # TODO: System notifications (notify-send)
+# TODO: gif option
+
+# TODO: Wayland support
+# https://github.com/emersion/slurp
+# https://github.com/ammen99/wf-recorder
 
 import upload
+import audio
 
 from time import localtime, strftime
 from playsound import playsound
@@ -61,13 +67,6 @@ args = parser.parse_args()
 # DO NOT EDIT THIS VALUE
 # Config located at ~/.config/sharez
 configVersion = 1.2
-
-# TODO: gif option
-
-# TODO: Wayland support
-# https://github.com/emersion/slurp
-# https://github.com/ammen99/wf-recorder
-
 
 # Directories
 scriptPath = os.path.abspath(os.path.dirname(__file__))
@@ -167,53 +166,7 @@ def sfx(sound, sync):
                 sound,), daemon=True).start()
 
 
-print("Detecting audio devices...")
-# Figure out audio device names
-cmd = ("pactl list sources | grep 'Description'")
-names = ""
-try:
-    names = subprocess.check_output(cmd, text=True, shell=True)
-except subprocess.CalledProcessError as e:
-    print(e)
-# Split the string into lines
-lines = names.strip().split('\n')
-new_lines = [line.replace('Description: ', '').strip() for line in lines]
-
-# Figure out audio device pulse IDs
-cmd2 = ("pactl list short sources")
-nums = ""
-try:
-    nums = subprocess.check_output(cmd2, text=True, shell=True)
-except subprocess.CalledProcessError as e:
-    print(e)
-# Truncate
-# Define the regular expression pattern to match numbers at the beginning of a string
-pattern = r'^\s*(\d+)'
-# Extract numbers from each line and store them in a list
-numbers_list = []
-for line in nums.split('\n'):
-    match = re.findall(pattern, line)
-    if match:
-        numbers_list.append(match[0])
-
-# there's a lot of redundant crap down here... i struggled a little with the implementation here.
-# TODO: clean this
-
-audioDevices = dict(zip(numbers_list, new_lines))
-
-audioDeviceList = {}
-audioDeviceNames = []
-for key in audioDevices:
-    audioDeviceList[key] = f"{key}: {audioDevices[key]}"
-    audioDeviceNames.append(audioDeviceList[key])
-
-if len(audioDeviceNames) == 0:
-    print("\nNo audio devices detected - do you have pactl?")
-
-audioDeviceList["default"] = "ALSA Default"
-audioDeviceList["disabled"] = "Disabled"
-audioDeviceNames.append("ALSA Default")
-audioDeviceNames.append("Disabled")
+audioDeviceList, audioDeviceShortNames, audioDeviceNames = audio.refresh_devices()
 
 # Check if our autoloaded audio device still exists
 if currentSettings['audio'] not in audioDeviceList:
@@ -222,7 +175,7 @@ if currentSettings['audio'] not in audioDeviceList:
     # Shove that back into config
     with open(configPath, 'w') as json_file:
         print(
-            f"Audio device {badDevice} not detected, resetting to default.\n")
+            f"Audio device {badDevice} not detected, resetting to default.")
         json.dump(currentSettings, json_file)
         savedSettings = currentSettings.copy()
 

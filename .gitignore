@@ -2,3 +2,4 @@
 *.mp4
 .vscode/
 capture-to-webserver.sh
+__pycache__/
