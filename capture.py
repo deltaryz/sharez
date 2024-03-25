@@ -14,6 +14,7 @@ import PySimpleGUI as sg
 import subprocess
 import webbrowser
 import re
+import argparse
 
 print(
     "\n"
@@ -21,6 +22,35 @@ print(
     "              made with <3 by deltaryz\n"
     "                    deltaryz.com\n")
 
+parser = argparse.ArgumentParser(
+    formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=27))
+
+parser.add_argument("--filename", type=str,
+                    help="Filename (supported extensions: .webm, .mp4, none)")
+parser.add_argument("--audio", type=str,
+                    help="`default`, `disabled`, or audio device ID - obtain with `pactl list short sources`")
+parser.add_argument("--path", type=str, help="Path to save file")
+parser.add_argument("--framerate", type=int, help="Recording framerate")
+parser.add_argument("--soundfx", type=bool,
+                    help="Enable/disable sound effects")
+parser.add_argument("--copy-path", type=bool,
+                    help="Enable/disable copying path to clipboard")
+parser.add_argument("--copy-file", type=bool,
+                    help="Enable/disable copying file to clipboard")
+parser.add_argument("--preview", type=bool,
+                    help="Enable/disable preview in VLC")
+parser.add_argument("--tsh-url", type=str,
+                    help="Custom transfer.sh service URL - https://github.com/dutchcoders/transfer.sh")
+parser.add_argument("--upload", type=bool,
+                    help="Enable/disable uploading to transfer.sh")
+parser.add_argument("--copy-url", type=bool,
+                    help="Enale/disable copying URL to clipboard")
+parser.add_argument("--browser", type=bool,
+                    help="Enable/disable opening URL in browser")
+parser.add_argument("--save", type=bool,
+                    help="Enable/disable saving of file locally")
+
+args = parser.parse_args()
 
 # DO NOT EDIT THIS VALUE
 # Config located at ~/.config/sharez
@@ -200,63 +230,81 @@ filename = strftime("%Y-%m-%d_%H.%M.%S", localtime()) + \
 def str2bool(v):
     return str(v).lower() in ("yes", "true", "1")
 
+# PROCESS ARGUMENTS
 
-# Check arguments
-for arg in sys.argv:
-    if "--preview=" in arg:  # Preview video in VLC before uploading
-        overriddenSettings['preview'] = True
-        currentSettings['preview'] = str2bool(arg.split("=", 1)[1])
-    if "--browser=" in arg:  # Show transfer.sh URL in browser
-        overriddenSettings['openinbrowser'] = True
-        currentSettings['openinbrowser'] = str2bool(arg.split("=", 1)[1])
-    if "--save=" in arg:  # Remove video after script runs
-        overriddenSettings['save'] = True
-        print(str2bool(arg.split("=", 1)[1]))
-        currentSettings['save'] = str2bool(arg.split("=", 1)[1])
-    if "--tshurl=" in arg:  # Custom transfer.sh url
-        argurl = arg.split("=", 1)[1]
-        overriddenSettings['tshurl'] = True
-        currentSettings['tshurl'] = argurl
-    if "--upload=" in arg:  # Don't upload to transfer.sh
-        overriddenSettings['upload'] = True
-        currentSettings['upload'] = str2bool(arg.split("=", 1)[1])
-    if "--copy-url=" in arg:  # Copy URL to clipboard
-        overriddenSettings['copyurl'] = True
-        currentSettings['copyurl'] = str2bool(arg.split("=", 1)[1])
-    if "--copy-path=" in arg:  # Copy file path to clipboard
-        overriddenSettings['copypath'] = True
-        currentSettings['copypath'] = str2bool(arg.split("=", 1)[1])
-    if "--copy-file=" in arg:  # Copy file to clipboard
-        overriddenSettings['copyfile'] = True
-        currentSettings['copyfile'] = str2bool(arg.split("=", 1)[1])
-    if "--audio=" in arg:  # Don't record audio
-        overriddenSettings['audio'] = True
-        _, currentSettings['audio'] = arg.split("=", 1)
-    if "--soundfx=" in arg:  # Don't play sounds
-        overriddenSettings['playsfx'] = True
-        currentSettings['playsfx'] = str2bool(arg.split("=", 1)[1])
-    if "--path=" in arg:  # Change path to save video
-        argpath = arg.split("=", 1)[1]
-        if argpath.endswith("/"):
-            # Remove / from end of path
-            argpath = argpath[:-1]
-        overriddenSettings['savepath'] = True
-        currentSettings['savepath'] = argpath
 
-    if "--filename=" in arg:  # change filename of video (extension optional)
-        _, filename = arg.split("=", 1)
-        if filename.endswith('.webm'):
-            overriddenSettings['filetype'] = True
-            currentSettings['filetype'] = "webm"
-        elif filename.endswith('.mp4'):
-            overriddenSettings['filetype'] = True
-            currentSettings['filetype'] = "mp4"
-        else:  # make sure we have an extension
-            filename += "." + currentSettings['filetype']
-    if "--framerate=" in arg:  # set recording framerate
-        overriddenSettings['framerate'] = True
-        _, framerate = arg.split("=", 1)
-        currentSettings['framerate'] = framerate
+# Set filename
+if args.filename is not None:
+    filename = args.filename
+    if filename.endswith('.webm'):
+        overriddenSettings['filetype'] = True
+        currentSettings['filetype'] = "webm"
+    elif filename.endswith('.mp4'):
+        overriddenSettings['filetype'] = True
+        currentSettings['filetype'] = "mp4"
+    else:  # make sure we have an extension
+        filename += "." + currentSettings['filetype']
+
+ # Set audio device
+if args.audio is not None:
+    overriddenSettings['audio'] = True
+    currentSettings['audio'] = args.audio
+
+# Set file path
+if args.path is not None:
+    argpath = args.path
+    if args.path.endswith("/"):
+        # Remove trailing slash if present
+        argpath = argpath[:-1]
+    overriddenSettings['savepath'] = True
+    currentSettings['savepath'] = argpath
+
+# Set framerate
+if args.framerate is not None:
+    overriddenSettings['framerate'] = True
+    currentSettings['framerate'] = args.framerate
+
+# Enable/disable sound effects
+if args.soundfx is not None:
+    overriddenSettings['soundfx'] = True
+    currentSettings['soundfx'] = args.soundfx
+
+# Copy file path to clipboard
+if args.copy_path is not None:
+    overriddenSettings['copypath'] = True
+    currentSettings['copypath'] = args.copy_path
+
+# Copy file to clipboard
+if args.copy_file is not None:
+    overriddenSettings['copyfile'] = True
+    currentSettings['copyfile'] = args.copy_file
+
+# Preview in media player
+if args.preview is not None:
+    overriddenSettings['preview'] = True
+    currentSettings['preview'] = args.preview
+
+# Set transfer.sh URL
+if args.tsh_url is not None:
+    overriddenSettings['tshurl'] = True
+    currentSettings['tshurl'] = args.tsh_url
+
+# Enable/disable uploading to transfer.sh
+if args.upload is not None:
+    overriddenSettings['upload'] = True
+    currentSettings['upload'] = args.upload
+
+# Copy URL to clipboard
+if args.copy_url is not None:
+    overriddenSettings['copyurl'] = True
+    currentSettings['copyurl'] = args.copy_url
+
+# Open URL in browser
+if args.browser is not None:
+    overriddenSettings['openinbrowser'] = True
+    currentSettings['openinbrowser'] = args.browser
+
+# DONE PROCESSING ARGUMENTS
 
 # print("Effective config after processing flags:")
 # print(currentSettings)
@@ -599,6 +647,7 @@ match event:
 
                 # Open link in browser
                 if currentSettings['openinbrowser']:
+                    print("Uploading in browser...")
                     webbrowser.open(link)
 
                 print(f"\nLink: {inline_link}")

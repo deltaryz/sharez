@@ -62,29 +62,29 @@ Checkboxes/flags are listed in the order they are executed by the program.
 ### NOTE: While developing this, the public transfer.sh service appears to have gone offline. This default URL will not function.
 #### Advanced users can [self-host transfer.sh](https://github.com/dutchcoders/transfer.sh), or achieve similar functionality with your save path exposed to a webserver (see example below).
 
-* `--filename=example.webm` - filename / format
+* `--filename example.webm` - filename / format
   * Supported formats: `.webm`, `.mp4`
   * Default filename: `$(date '+%Y-%m-%d_%H.%M.%S').mp4`
   * Extension is optional, if omitted will use saved setting
-* `--audio=default` - record audio
+* `--audio default` - record audio
   * Supports pulseaudio device IDs obtained with `pactl list short sources`
   * `default` uses ALSA default, can be configured with `pavucontrol`
   * Can be `disabled`
-* `--path=/home/example/Videos` - path to save video
-* `--framerate=60` - recording framerate (lower this if your PC can't keep up)
-* `--soundfx=true` - play sound effects
-* `--copy-path=false` - copy file path to clipboard
-* `--copy-file=true` - copy file to clipboard
-* `--preview=false` - open the video in VLC to preview (requires VLC to be installed)
-* `--tshurl=https://transfer.sh` - URL of [transfer.sh service](https://github.com/dutchcoders/transfer.sh)
-* `--upload=false` - upload to transfer.sh
-* `--copy-url=true` - copy URL to clipboard
-* `--browser=false` - open URL in browser
-* `--save=true` - keep local recording after script finishes
+* `--path /home/example/Videos` - path to save video
+* `--framerate 60` - recording framerate (lower this if your PC can't keep up)
+* `--soundfx true` - play sound effects
+* `--copy-path false` - copy file path to clipboard
+* `--copy-file true` - copy file to clipboard
+* `--preview false` - open the video in VLC to preview (requires VLC to be installed)
+* `--tsh-url https://transfer.sh` - URL of [transfer.sh service](https://github.com/dutchcoders/transfer.sh)
+* `--upload false` - upload to transfer.sh
+* `--copy-url true` - copy URL to clipboard
+* `--browser false` - open URL in browser
+* `--save true` - keep local recording after script finishes
 
 Example command to upload to transfer.sh and remove local file after finishing: 
 ```sh
-python3 capture.py --upload=true --tshurl=https://example.website --copy-url=true --save=false
+python3 capture.py --upload true --tsh-url https://example.website --copy-url true --save false
 ```
 
 Example script to use in conjunction with personal webserver:
