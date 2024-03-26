@@ -141,6 +141,7 @@ for setting in overriddenSettings:
 screen_width, screen_height = sg.Window.get_screen_size()
 
 # Sound effects
+activate = scriptPath + "/sfx/ACTIVATE.wav"
 recordStart = scriptPath + "/sfx/BEGIN.wav"
 recordFinish = scriptPath + "/sfx/END.wav"
 encodingFinished = scriptPath + "/sfx/ENCODE.wav"
@@ -276,6 +277,8 @@ print("Bitrate:                 " + currentSettings['bitrate'])
 print("Framerate:               " + currentSettings['framerate'])
 print("Audio device:            " + audioDeviceList[currentSettings['audio']])
 print()
+
+sfx(activate, False)
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
