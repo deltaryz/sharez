@@ -4,14 +4,14 @@
 
 # TODO: System notifications (notify-send)
 # TODO: gif option
+# TODO: volume level for sounds
 
 import time
 import upload
 import audio
+import sfx
 
 from time import localtime, strftime
-from playsound import playsound
-import threading
 import os
 import json
 import signal
@@ -140,27 +140,6 @@ for setting in overriddenSettings:
 # Get screen size
 screen_width, screen_height = sg.Window.get_screen_size()
 
-# Sound effects
-activate = scriptPath + "/sfx/ACTIVATE.wav"
-recordStart = scriptPath + "/sfx/BEGIN.wav"
-recordFinish = scriptPath + "/sfx/END.wav"
-encodingFinished = scriptPath + "/sfx/ENCODE.wav"
-uploadFinished = scriptPath + "/sfx/UPLOAD.wav"
-uploadFailed = scriptPath + "/sfx/FAIL.wav"
-
-
-def sfx(sound, sync):
-    # Play Sound Effect
-    # sound = filename
-    # sync = true to make program wait for sound to play before proceeding
-    if currentSettings['playsfx']:
-        if sync:
-            playsound(sound)
-        else:
-            threading.Thread(target=playsound, args=(
-                sound,), daemon=True).start()
-
-
 audioDeviceList, audioDeviceShortNames, audioDeviceNames = audio.refresh_devices()
 
 # Check if our autoloaded audio device still exists
@@ -278,12 +257,12 @@ print("Framerate:               " + currentSettings['framerate'])
 print("Audio device:            " + audioDeviceList[currentSettings['audio']])
 print()
 
-sfx(activate, False)
+sfx.playSfx("activate", False)
 
 # Use slop to select a region
 region = subprocess.check_output("slop", text=True, shell=True)
 
-sfx(recordStart, True)
+sfx.playSfx("recordStart", True)
 
 print(f"Screen size:             {screen_width}x{screen_height}")
 print(f"Region:                  {region}")
@@ -428,7 +407,7 @@ if code == None:  # We didn't crash (yet)!
 
 else:
     event = "failed"
-    sfx(uploadFailed, True)
+    sfx.playSfx("uploadFailed", True)
 
 # TODO: command flag to hide options button
 
@@ -438,7 +417,7 @@ print("\n-- -- -- -- --")
 match event:
     case "Cfg":
         print("\nConfig panel opened.\nRemoving video...")
-        sfx(recordFinish, False)
+        sfx.playSfx("recordFinish", False)
         os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
 
         # TODO: indicate anything overridden with flags using disabled=settingsOverrides["key"]
@@ -606,12 +585,12 @@ match event:
 
         print(f"Path: {currentSettings['savepath']}/{filename}")
 
-        sfx(encodingFinished, True)
+        sfx.playSfx("encodingFinished", True)
 
         # transfer.sh went offline so don't even bother trying
         if "https://transfer.sh" in currentSettings['tshurl']:
             print("\n==========\nNotice: https://transfer.sh has been temporarily(?) disabled as it appears to have gone offline.\nConsider self-hosting: https://github.com/dutchcoders/transfer.sh\n==========\n")
-            sfx(uploadFailed, True)
+            sfx.playSfx("uploadFailed", True)
             currentSettings['upload'] = False
 
         if currentSettings['upload'] == True:
@@ -634,19 +613,19 @@ match event:
                     webbrowser.open(preview_link)
 
                 print(f"\nLink: {inline_link}")
-                sfx(uploadFinished, True)
+                sfx.playSfx("uploadFinished", True)
             else:
                 # It failed! :(
                 # TODO: Display GUI
-                sfx(uploadFailed, True)
+                sfx.playSfx("uploadFailed", True)
 
         if currentSettings['save'] == False:
             print("Removing video...")
             os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
-            sfx(recordFinish, True)
+            sfx.playSfx("recordFinish", True)
     case _:
         print("\nCancelled.\nRemoving video...")
         os.system(f"rm \"{currentSettings['savepath']}/{filename}\"")
-        sfx(recordFinish, True)
+        sfx.playSfx("recordFinish", True)
 
 print()
