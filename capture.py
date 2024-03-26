@@ -358,7 +358,7 @@ elif session == "Wayland":
 
 print(f"\nRunning command:         {command}\n\n-- -- -- -- --\n")
 
-# Start ffmpeg
+# Start recording
 record = subprocess.Popen(
     command, shell=True, preexec_fn=os.setsid)
 
@@ -378,7 +378,7 @@ if locationY < 0:
 sg.theme_background_color('#333333')
 
 # Check if command errored immediately
-time.sleep(0.1)
+time.sleep(0.1)  # TODO: better way to do this
 code = record.poll()
 
 if code == None:  # We didn't crash (yet)!

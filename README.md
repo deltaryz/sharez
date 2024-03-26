@@ -85,7 +85,7 @@ Checkboxes/flags are listed in the order they are executed by the program.
 * `--upload false` - upload to transfer.sh
 * `--copy-url true` - copy URL to clipboard
 * `--browser false` - open URL in browser
-* `--save true` - keep local recording after script finishes
+* `--delete false` - delete local recording after script finishes
 
 Example command to upload to transfer.sh and remove local file after finishing: 
 ```sh
