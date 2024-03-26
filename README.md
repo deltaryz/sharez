@@ -2,26 +2,30 @@
 
 Finally. Your desktop recording prayers have been answered.
 
-This is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux/X11, engineered to minimize required clicks/keypresses and be friendly to scripting and automation.
+This is a [ShareX](https://getsharex.com/)-inspired video recording utility for Linux (X11 and Wayland), engineered to minimize required clicks/keypresses and be friendly to scripting and automation.
 
 ![Demonstration of script usage](img/demo.gif)
 
-## Install Instructions:
+Note: Wayland support is currently somewhat limited.
 
-Only Xorg environments are supported. Wayland is not currently implemented, but it is planned.
+Because it is implemented via [wf-recorder](https://github.com/ammen99/wf-recorder), some DEs like GNOME and KDE still don't work (sorry). If you are on `sway` or `hyprland`, it does!
+
+Also, the recording region does not display an outline on Wayland (yet).
+
+## Install Instructions:
 
 - Obtain the repository with `git clone https://github.com/deltaryz/sharez` or downloading and extracting the ZIP from this page
 - If you use `git` to acquire sharez, you can quickly update it with `git pull` inside the `sharez` folder
 
 ### Arch / Manjaro
-- `sudo pacman -S python3 slop ffmpeg curl xclip tk python-pip`
+- `sudo pacman -S python3 slop ffmpeg curl xclip tk python-pip wf-recorder`
 - `pip install pysimplegui playsound`
   - (you may need either venv or `--break-system-packages`)
 - (Optional) It is strongly recommended to use PipeWire with WirePlumber and PulseAudio support for maximum functionality:
   - `sudo pacman -S pipewire pipewire-audio pipewire-pulse`
 
 ### Ubuntu / Debian
-- `sudo apt install python3 slop ffmpeg curl xclip tk python3-tk python3-pip`
+- `sudo apt install python3 slop ffmpeg curl xclip tk python3-tk python3-pip wf-recorder`
 - `pip install pysimplegui playsound`
   - (you may need either venv or `--break-system-packages`)
 - (Optional) It is strongly recommended to use PipeWire with WirePlumber and PulseAudio support for maximum functionality:
@@ -31,7 +35,7 @@ Only Xorg environments are supported. Wayland is not currently implemented, but 
 ### Other
 
 Install your distro's equivalents of the following packages:
-- `python3`, `slop`, `ffmpeg`, `curl`, `xclip`, `tk`
+- `python3`, `slop`, `ffmpeg`, `curl`, `xclip`, `tk`, `wf-recorder`
 - `pip install pysimplegui playsound`
 - (Optional) `pipewire`, `pipewire-audio`, `pipewire-pulse`, `wireplumber`
 
@@ -42,6 +46,7 @@ Either manually trigger the script with `python3 capture.py`, or create a keyboa
 
 - **GNOME**: Settings, Keyboard, View and Customize Shortcuts, Custom Shortcuts, Add Shortcut
 - **XFCE**: Keyboard settings, Application Shortcuts tab
+- **Sway**: `bindsym $mod+Shift+p exec /usr/bin/python3 /path/to/capture.py`
 
 Click and drag to select the region to record, and the recording will immediately begin.
 

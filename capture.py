@@ -5,10 +5,7 @@
 # TODO: System notifications (notify-send)
 # TODO: gif option
 
-# TODO: Wayland support
-# https://github.com/emersion/slurp
-# https://github.com/ammen99/wf-recorder
-
+import time
 import upload
 import audio
 
@@ -337,12 +334,14 @@ if session == "X11":
                 f"-i {currentSettings['audio']} "
             )
 
+    # We're recording a webm
     if currentSettings['filetype'] == "webm":
         command += (
             f"-c:v libvpx -b:v {currentSettings['bitrate']}M "
             "-c:a libvorbis -b:a 128k "
         )
 
+    # We're recording an mp4
     if currentSettings['filetype'] == "mp4":
         command += (
             f"-c:v libx264 -b:v {currentSettings['bitrate']}M "
@@ -353,14 +352,33 @@ if session == "X11":
         f"-y \"{currentSettings['savepath']}/{filename}\""
     )
 elif session == "Wayland":
-    sfx(uploadFailed, True)
-    raise RuntimeError("Wayland support not implemented")
+    command = ("wf-recorder "
+               f"-g \"{offset[0]},{offset[1]} {width}x{height}\" "
+               f"-r {currentSettings['framerate']} "
+               f"-f \"{currentSettings['savepath']}/{filename}\" "
+               f"-p b={currentSettings['bitrate']}M "
+               )
 
+    # We're recording a webm
+    if currentSettings['filetype'] == "webm":
+        command += (
+            f"-c libvpx-vp9 "
+            f"-C libvorbis "
+        )
+
+    # Audio
+    if currentSettings['audio'] != "disabled":
+        if currentSettings['audio'] == "default":
+            # auto-detect
+            command += "-a "
+        else:
+            command += f"-a={audioDeviceShortNames[currentSettings['audio']]}"
 
 print(f"\nRunning command:         {command}\n\n-- -- -- -- --\n")
 
 # Start ffmpeg
-ffmpeg = subprocess.Popen(command, shell=True, preexec_fn=os.setsid)
+record = subprocess.Popen(
+    command, shell=True, preexec_fn=os.setsid)
 
 # Make sure the toolbar is placed near the recording region
 locationX = int(offset[0]) - 3
@@ -377,31 +395,39 @@ if locationY < 0:
 
 sg.theme_background_color('#333333')
 
-# Toolbar window properties
-# TODO: Second duration indicator
-event, values = sg.Window('Capture',
-                          [[sg.Button("", key="OK", expand_x=True, image_source=scriptPath + "/img/done.png", image_subsample=3, button_color=('#3BFF62')),
-                            sg.Button("", key="X", image_source=scriptPath + "/img/close.png",
-                                      image_subsample=3, pad=(4, 4), button_color='#FF3232'),
-                            sg.Text(text=f"{currentSettings['filetype']}", background_color='#2d2d2d',
-                                    expand_x=True, justification='center', text_color='#929292'),
-                            sg.Button("", key="Cfg", image_source=scriptPath +
-                                      "/img/settings.png", image_subsample=3, button_color='#474747'),
-                            ]],
-                          size=(160, 30),
-                          margins=(0, 0),
-                          keep_on_top=True,
-                          no_titlebar=True,
-                          location=(locationX, locationY)
-                          ).read(close=True)
+# Check if command errored immediately
+time.sleep(0.1)
+code = record.poll()
+
+if code == None:  # We didn't crash (yet)!
+    # Toolbar window properties
+    # TODO: Second duration indicator
+    event, values = sg.Window('Capture',
+                              [[sg.Button("", key="OK", expand_x=True, image_source=scriptPath + "/img/done.png", image_subsample=3, button_color=('#3BFF62')),
+                                sg.Button("", key="X", image_source=scriptPath + "/img/close.png",
+                                          image_subsample=3, pad=(4, 4), button_color='#FF3232'),
+                                sg.Text(text=f"{currentSettings['filetype']}", background_color='#2d2d2d',
+                                        expand_x=True, justification='center', text_color='#929292'),
+                                sg.Button("", key="Cfg", image_source=scriptPath +
+                                          "/img/settings.png", image_subsample=3, button_color='#474747'),
+                                ]],
+                              size=(160, 30),
+                              margins=(0, 0),
+                              keep_on_top=True,
+                              no_titlebar=True,
+                              location=(locationX, locationY)
+                              ).read(close=True)
+    # Tell ffmpeg to stop
+    os.killpg(os.getpgid(record.pid), signal.SIGINT)
+
+    # Wait for ffmpeg to finish up
+    record.wait()
+
+else:
+    event = "failed"
+    sfx(uploadFailed, True)
 
 # TODO: command flag to hide options button
-
-# Tell ffmpeg to stop
-os.killpg(os.getpgid(ffmpeg.pid), signal.SIGINT)
-
-# Wait for ffmpeg to finish up
-ffmpeg.wait()
 
 print("\n-- -- -- -- --")
 
@@ -541,7 +567,7 @@ match event:
                 with open(configPath, 'w') as json_file:
                     json.dump(savedSettings, json_file)
 
-                print("\nConfig written to file.\n")
+                print("\nConfig written to file.")
 
                 break
             elif event == 'deltaryz':
