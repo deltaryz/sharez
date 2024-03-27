@@ -6,11 +6,11 @@
 # TODO: gif option
 # TODO: volume level for sounds
 
-import time
 import upload
 import audio
 import sfx
 
+import time
 from time import localtime, strftime
 import os
 import json
@@ -542,6 +542,11 @@ match event:
                     if value == "save":
                         savedSettings[value] = not values[value]
 
+                    # Remove slash in path
+                    if value == "savepath":
+                        if values[value].endswith("/"):
+                            savedSettings[value] = values[value][:-1]
+
                 print()
                 print(savedSettings)
 
@@ -612,7 +617,8 @@ match event:
                     print("Opening in browser...")
                     webbrowser.open(preview_link)
 
-                print(f"\nLink: {inline_link}")
+                print(f"\nPreview Link:   {preview_link}")
+                print(f"Inline Link:    {inline_link}")
                 sfx.playSfx("uploadFinished", True)
             else:
                 # It failed! :(

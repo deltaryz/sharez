@@ -18,14 +18,14 @@ Also, the recording region does not display an outline on Wayland (yet).
 - If you use `git` to acquire sharez, you can quickly update it with `git pull` inside the `sharez` folder
 
 ### Arch / Manjaro
-- `sudo pacman -S python3 slop ffmpeg curl xclip tk python-pip wf-recorder`
+- `sudo pacman -S python3 slop ffmpeg xclip tk python-pip wf-recorder`
 - `pip install pysimplegui==4.60.5`
   - (you may need either venv or `--break-system-packages`)
 - (Optional) It is strongly recommended to use PipeWire with WirePlumber and PulseAudio support for maximum functionality:
   - `sudo pacman -S pipewire pipewire-audio pipewire-pulse`
 
 ### Ubuntu / Debian
-- `sudo apt install python3 slop ffmpeg curl xclip tk python3-tk python3-pip wf-recorder`
+- `sudo apt install python3 slop ffmpeg xclip tk python3-tk python3-pip wf-recorder`
 - `pip install pysimplegui==4.60.5`
   - (you may need either venv or `--break-system-packages`)
 - (Optional) It is strongly recommended to use PipeWire with WirePlumber and PulseAudio support for maximum functionality:
@@ -35,7 +35,7 @@ Also, the recording region does not display an outline on Wayland (yet).
 ### Other
 
 Install your distro's equivalents of the following packages:
-- `python3`, `slop`, `ffmpeg`, `curl`, `xclip`, `tk`, `wf-recorder`
+- `python3`, `slop`, `ffmpeg`, `xclip`, `tk`, `wf-recorder`
 - `pip install pysimplegui==4.60.5`
 - (Optional) `pipewire`, `pipewire-audio`, `pipewire-pulse`, `wireplumber`
 
