@@ -15,7 +15,7 @@ from time import localtime, strftime
 import os
 import json
 import signal
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 import subprocess
 import webbrowser
 import argparse

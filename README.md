@@ -19,14 +19,14 @@ Also, the recording region does not display an outline on Wayland (yet).
 
 ### Arch / Manjaro
 - `sudo pacman -S python3 slop ffmpeg xclip tk python-pip wf-recorder`
-- `pip install pysimplegui==4.60.5`
+- `pip install FreeSimpleGUI`
   - (you may need either venv or `--break-system-packages`)
 - (Optional) It is strongly recommended to use PipeWire with WirePlumber and PulseAudio support for maximum functionality:
   - `sudo pacman -S pipewire pipewire-audio pipewire-pulse`
 
 ### Ubuntu / Debian
 - `sudo apt install python3 slop ffmpeg xclip tk python3-tk python3-pip wf-recorder`
-- `pip install pysimplegui==4.60.5`
+- `pip install FreeSimpleGUI`
   - (you may need either venv or `--break-system-packages`)
 - (Optional) It is strongly recommended to use PipeWire with WirePlumber and PulseAudio support for maximum functionality:
   - [Debian instructions](https://wiki.debian.org/PipeWire#Installation)
@@ -36,7 +36,7 @@ Also, the recording region does not display an outline on Wayland (yet).
 
 Install your distro's equivalents of the following packages:
 - `python3`, `slop`, `ffmpeg`, `xclip`, `tk`, `wf-recorder`
-- `pip install pysimplegui==4.60.5`
+- `pip install FreeSimpleGUI`
 - (Optional) `pipewire`, `pipewire-audio`, `pipewire-pulse`, `wireplumber`
 
 ## Usage:
